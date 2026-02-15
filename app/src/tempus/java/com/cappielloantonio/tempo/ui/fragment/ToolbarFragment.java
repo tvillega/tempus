@@ -39,6 +39,7 @@ public class ToolbarFragment extends Fragment {
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.main_page_menu, menu);
+        menu.findItem(R.id.action_search).setVisible(false);
         CastButtonFactory.setUpMediaRouteButton(requireContext(), menu, R.id.media_route_menu_item);
     }
 
@@ -56,9 +57,6 @@ public class ToolbarFragment extends Fragment {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.action_search) {
             activity.navController.navigate(R.id.searchFragment);
-            return true;
-        } else if (item.getItemId() == R.id.action_settings) {
-            activity.navController.navigate(R.id.settingsFragment);
             return true;
         }
 

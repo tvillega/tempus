@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.Color;
 import android.media.audiofx.AudioEffect;
 import android.net.Uri;
 import android.os.Bundle;
@@ -15,6 +16,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -34,6 +37,7 @@ import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceCategory;
 import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.PreferenceScreen;
 import androidx.preference.SwitchPreference;
 
 import com.cappielloantonio.tempo.BuildConfig;
@@ -60,7 +64,7 @@ import java.util.Locale;
 import java.util.Map;
 
 @OptIn(markerClass = UnstableApi.class)
-public class SettingsFragment extends PreferenceFragmentCompat {
+public class SettingsFragment extends PreferenceFragmentCompat implements PreferenceFragmentCompat.OnPreferenceStartScreenCallback {
     private static final String TAG = "SettingsFragment";
 
     private MainActivity activity;
@@ -114,21 +118,76 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         activity = (MainActivity) getActivity();
-
-        View view = super.onCreateView(inflater, container, savedInstanceState);
         settingViewModel = new ViewModelProvider(requireActivity()).get(SettingViewModel.class);
 
-        if (view != null) {
+        View prefView = super.onCreateView(inflater, container, savedInstanceState);
+        
+        boolean isRoot = getArguments() == null || getArguments().getString(PreferenceFragmentCompat.ARG_PREFERENCE_ROOT) == null;
+        if (!isRoot) return prefView;
+
+        LinearLayout root = new LinearLayout(requireContext());
+        root.setOrientation(LinearLayout.VERTICAL);
+        root.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        root.setBackgroundColor(UIUtil.getThemeColor(requireContext(), android.R.attr.colorBackground));
+        
+        // Add title
+        TextView title = new TextView(requireContext());
+        title.setText("Settings");
+        title.setTextSize(40);
+        title.setTypeface(null, android.graphics.Typeface.BOLD);
+        title.setPadding(com.cappielloantonio.tempo.util.UIUtil.dpToPx(requireContext(), 24), 
+                         com.cappielloantonio.tempo.util.UIUtil.dpToPx(requireContext(), 32), 
+                         com.cappielloantonio.tempo.util.UIUtil.dpToPx(requireContext(), 24), 
+                         com.cappielloantonio.tempo.util.UIUtil.dpToPx(requireContext(), 16));
+        title.setTextColor(com.cappielloantonio.tempo.util.UIUtil.getThemeColor(requireContext(), com.google.android.material.R.attr.colorOnSurface));
+        
+        root.addView(title);
+        if (prefView != null) {
+            root.addView(prefView);
+        }
+        
+        return root;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        
+        if (getListView() != null) {
             getListView().setPadding(0, 0, 0, (int) getResources().getDimension(R.dimen.global_padding_bottom));
+            getListView().setClipToPadding(false);
+            getListView().addItemDecoration(new com.cappielloantonio.tempo.ui.view.SettingsItemDecoration(requireContext()));
         }
 
-        return view;
+        initAppBar(view);
+    }
+
+    private void initAppBar(View view) {
+        // Find toolbar in activity instead of view if programmatic root is used
+        androidx.appcompat.widget.Toolbar toolbar = activity.findViewById(R.id.toolbar);
+        
+        boolean isRoot = getArguments() == null || getArguments().getString(PreferenceFragmentCompat.ARG_PREFERENCE_ROOT) == null;
+
+        if (toolbar != null) {
+            activity.setSupportActionBar(toolbar);
+            if (activity.getSupportActionBar() != null) {
+                activity.getSupportActionBar().setDisplayHomeAsUpEnabled(!isRoot);
+                activity.getSupportActionBar().setDisplayShowHomeEnabled(!isRoot);
+                activity.getSupportActionBar().setTitle(isRoot ? "" : getPreferenceScreen().getTitle());
+            }
+
+            toolbar.setNavigationOnClickListener(v -> {
+                if (!activity.navController.popBackStack()) {
+                    activity.navController.navigateUp();
+                }
+            });
+        }
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        activity.setBottomNavigationBarVisibility(false);
+        activity.setBottomNavigationBarVisibility(true);
         activity.setBottomSheetVisibility(false);
     }
 
@@ -158,9 +217,21 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         actionKeepScreenOn();
         actionAutoDownloadLyrics();
         actionMiniPlayerHeart();
+        actionConfigureDock();
 
         bindMediaService();
         actionAppEqualizer();
+    }
+
+    private void actionConfigureDock() {
+        Preference pref = findPreference("configure_dock");
+        if (pref != null) {
+            pref.setOnPreferenceClickListener(preference -> {
+                NavController navController = NavHostFragment.findNavController(this);
+                navController.navigate(R.id.dockConfigurationFragment);
+                return true;
+            });
+        }
     }
 
     @Override
@@ -172,6 +243,9 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.global_preferences, rootKey);
+
+        applyCustomLayouts(getPreferenceScreen());
+
         ListPreference themePreference = findPreference(Preferences.THEME);
         if (themePreference != null) {
             themePreference.setOnPreferenceChangeListener(
@@ -180,6 +254,18 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                         ThemeHelper.applyTheme(themeOption);
                         return true;
                     });
+        }
+    }
+
+    private void applyCustomLayouts(androidx.preference.PreferenceGroup group) {
+        for (int i = 0; i < group.getPreferenceCount(); i++) {
+            Preference pref = group.getPreference(i);
+            if (pref instanceof PreferenceCategory) {
+                pref.setLayoutResource(R.layout.preference_category_card);
+            }
+            if (pref instanceof androidx.preference.PreferenceGroup) {
+                applyCustomLayouts((androidx.preference.PreferenceGroup) pref);
+            }
         }
     }
 
@@ -311,6 +397,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
 
     private void setAppLanguage() {
         ListPreference localePref = (ListPreference) findPreference("language");
+        if (localePref == null) return;
 
         Map<String, String> locales = UIUtil.getLangPreferenceDropdownEntries(requireContext());
 
@@ -341,119 +428,150 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     }
 
     private void setVersion() {
-        findPreference("version").setSummary(BuildConfig.VERSION_NAME);
+        Preference pref = findPreference("version");
+        if (pref != null) {
+            pref.setSummary(BuildConfig.VERSION_NAME);
+        }
     }
 
     private void actionLogout() {
-        findPreference("logout").setOnPreferenceClickListener(preference -> {
-            activity.quit();
-            return true;
-        });
+        Preference pref = findPreference("logout");
+        if (pref != null) {
+            pref.setOnPreferenceClickListener(preference -> {
+                activity.quit();
+                return true;
+            });
+        }
     }
 
     private void actionScan() {
-        findPreference("scan_library").setOnPreferenceClickListener(preference -> {
-            settingViewModel.launchScan(new ScanCallback() {
-                @Override
-                public void onError(Exception exception) {
-                    findPreference("scan_library").setSummary(exception.getMessage());
-                }
+        Preference pref = findPreference("scan_library");
+        if (pref != null) {
+            pref.setOnPreferenceClickListener(preference -> {
+                settingViewModel.launchScan(new ScanCallback() {
+                    @Override
+                    public void onError(Exception exception) {
+                        Preference p = findPreference("scan_library");
+                        if (p != null) p.setSummary(exception.getMessage());
+                    }
 
-                @Override
-                public void onSuccess(boolean isScanning, long count) {
-                    findPreference("scan_library").setSummary(getString(R.string.settings_scan_result, count));
-                    if (isScanning) getScanStatus();
-                }
+                    @Override
+                    public void onSuccess(boolean isScanning, long count) {
+                        Preference p = findPreference("scan_library");
+                        if (p != null) p.setSummary(getString(R.string.settings_scan_result, count));
+                        if (isScanning) getScanStatus();
+                    }
+                });
+
+                return true;
             });
-
-            return true;
-        });
+        }
     }
 
     private void actionSyncStarredTracks() {
-        findPreference("sync_starred_tracks_for_offline_use").setOnPreferenceChangeListener((preference, newValue) -> {
-            if (newValue instanceof Boolean) {
-                if ((Boolean) newValue) {
-                    StarredSyncDialog dialog = new StarredSyncDialog(() -> {
-                        ((SwitchPreference)preference).setChecked(false);
-                    });
-                    dialog.show(activity.getSupportFragmentManager(), null);
-                    }
-            }
-            return true;
-        });
+        Preference pref = findPreference("sync_starred_tracks_for_offline_use");
+        if (pref != null) {
+            pref.setOnPreferenceChangeListener((preference, newValue) -> {
+                if (newValue instanceof Boolean) {
+                    if ((Boolean) newValue) {
+                        StarredSyncDialog dialog = new StarredSyncDialog(() -> {
+                            ((SwitchPreference)preference).setChecked(false);
+                        });
+                        dialog.show(activity.getSupportFragmentManager(), null);
+                        }
+                }
+                return true;
+            });
+        }
     }
 
     private void actionSyncStarredAlbums() {
-        findPreference("sync_starred_albums_for_offline_use").setOnPreferenceChangeListener((preference, newValue) -> {
-            if (newValue instanceof Boolean) {
-                if ((Boolean) newValue) {
-                    StarredAlbumSyncDialog dialog = new StarredAlbumSyncDialog(() -> {
-                        ((SwitchPreference)preference).setChecked(false);
-                    });
-                    dialog.show(activity.getSupportFragmentManager(), null);
+        Preference pref = findPreference("sync_starred_albums_for_offline_use");
+        if (pref != null) {
+            pref.setOnPreferenceChangeListener((preference, newValue) -> {
+                if (newValue instanceof Boolean) {
+                    if ((Boolean) newValue) {
+                        StarredAlbumSyncDialog dialog = new StarredAlbumSyncDialog(() -> {
+                            ((SwitchPreference)preference).setChecked(false);
+                        });
+                        dialog.show(activity.getSupportFragmentManager(), null);
+                    }
                 }
-            }
-            return true;
-        });
+                return true;
+            });
+        }
     }
 
     private void actionSyncStarredArtists() {
-        findPreference("sync_starred_artists_for_offline_use").setOnPreferenceChangeListener((preference, newValue) -> {
-            if (newValue instanceof Boolean) {
-                if ((Boolean) newValue) {
-                    StarredArtistSyncDialog dialog = new StarredArtistSyncDialog(() -> {
-                        ((SwitchPreference)preference).setChecked(false);
-                    });
-                    dialog.show(activity.getSupportFragmentManager(), null);
+        Preference pref = findPreference("sync_starred_artists_for_offline_use");
+        if (pref != null) {
+            pref.setOnPreferenceChangeListener((preference, newValue) -> {
+                if (newValue instanceof Boolean) {
+                    if ((Boolean) newValue) {
+                        StarredArtistSyncDialog dialog = new StarredArtistSyncDialog(() -> {
+                            ((SwitchPreference)preference).setChecked(false);
+                        });
+                        dialog.show(activity.getSupportFragmentManager(), null);
+                    }
                 }
-            }
-            return true;
-        });
+                return true;
+            });
+        }
     }
 
     private void actionChangeStreamingCacheStorage() {
-        findPreference("streaming_cache_storage").setOnPreferenceClickListener(preference -> {
-            StreamingCacheStorageDialog dialog = new StreamingCacheStorageDialog(new DialogClickCallback() {
-                @Override
-                public void onPositiveClick() {
-                    findPreference("streaming_cache_storage").setSummary(R.string.streaming_cache_storage_external_dialog_positive_button);
-                }
+        Preference pref = findPreference("streaming_cache_storage");
+        if (pref != null) {
+            pref.setOnPreferenceClickListener(preference -> {
+                StreamingCacheStorageDialog dialog = new StreamingCacheStorageDialog(new DialogClickCallback() {
+                    @Override
+                    public void onPositiveClick() {
+                        Preference p = findPreference("streaming_cache_storage");
+                        if (p != null) p.setSummary(R.string.streaming_cache_storage_external_dialog_positive_button);
+                    }
 
-                @Override
-                public void onNegativeClick() {
-                    findPreference("streaming_cache_storage").setSummary(R.string.streaming_cache_storage_internal_dialog_negative_button);
-                }
+                    @Override
+                    public void onNegativeClick() {
+                        Preference p = findPreference("streaming_cache_storage");
+                        if (p != null) p.setSummary(R.string.streaming_cache_storage_internal_dialog_negative_button);
+                    }
+                });
+                dialog.show(activity.getSupportFragmentManager(), null);
+                return true;
             });
-            dialog.show(activity.getSupportFragmentManager(), null);
-            return true;
-        });
+        }
     }
 
     private void actionChangeDownloadStorage() {
-        findPreference("download_storage").setOnPreferenceClickListener(preference -> {
-            DownloadStorageDialog dialog = new DownloadStorageDialog(new DialogClickCallback() {
-                @Override
-                public void onPositiveClick() {
-                    findPreference("download_storage").setSummary(R.string.download_storage_external_dialog_positive_button);
-                    checkDownloadDirectory();
-                }
+        Preference pref = findPreference("download_storage");
+        if (pref != null) {
+            pref.setOnPreferenceClickListener(preference -> {
+                DownloadStorageDialog dialog = new DownloadStorageDialog(new DialogClickCallback() {
+                    @Override
+                    public void onPositiveClick() {
+                        Preference p = findPreference("download_storage");
+                        if (p != null) p.setSummary(R.string.download_storage_external_dialog_positive_button);
+                        checkDownloadDirectory();
+                    }
 
-                @Override
-                public void onNegativeClick() {
-                    findPreference("download_storage").setSummary(R.string.download_storage_internal_dialog_negative_button);
-                    checkDownloadDirectory();
-                }
+                    @Override
+                    public void onNegativeClick() {
+                        Preference p = findPreference("download_storage");
+                        if (p != null) p.setSummary(R.string.download_storage_internal_dialog_negative_button);
+                        checkDownloadDirectory();
+                    }
 
-                @Override
-                public void onNeutralClick() {
-                    findPreference("download_storage").setSummary(R.string.download_storage_directory_dialog_neutral_button);
-                    checkDownloadDirectory();
-                }
+                    @Override
+                    public void onNeutralClick() {
+                        Preference p = findPreference("download_storage");
+                        if (p != null) p.setSummary(R.string.download_storage_directory_dialog_neutral_button);
+                        checkDownloadDirectory();
+                    }
+                });
+                dialog.show(activity.getSupportFragmentManager(), null);
+                return true;
             });
-            dialog.show(activity.getSupportFragmentManager(), null);
-            return true;
-        });
+        }
     }
 
     private void actionSetDownloadDirectory() {
@@ -482,69 +600,76 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     }
 
     private void actionDeleteDownloadStorage() {
-        findPreference("delete_download_storage").setOnPreferenceClickListener(preference -> {
-            DeleteDownloadStorageDialog dialog = new DeleteDownloadStorageDialog();
-            dialog.show(activity.getSupportFragmentManager(), null);
-            return true;
-        });
+        Preference pref = findPreference("delete_download_storage");
+        if (pref != null) {
+            pref.setOnPreferenceClickListener(preference -> {
+                DeleteDownloadStorageDialog dialog = new DeleteDownloadStorageDialog();
+                dialog.show(activity.getSupportFragmentManager(), null);
+                return true;
+            });
+        }
     }
 
     private void actionMiniPlayerHeart() {
         SwitchPreference preference = findPreference("mini_shuffle_button_visibility");
-        if (preference == null) {
-            return;
+        if (preference != null) {
+            preference.setChecked(Preferences.showShuffleInsteadOfHeart());
+            preference.setOnPreferenceChangeListener((pref, newValue) -> {
+                if (newValue instanceof Boolean) {
+                    Preferences.setShuffleInsteadOfHeart((Boolean) newValue);
+                }
+                return true;
+            });
         }
-
-        preference.setChecked(Preferences.showShuffleInsteadOfHeart());
-        preference.setOnPreferenceChangeListener((pref, newValue) -> {
-            if (newValue instanceof Boolean) {
-                Preferences.setShuffleInsteadOfHeart((Boolean) newValue);
-            }
-            return true;
-        });
     }
 
     private void actionAutoDownloadLyrics() {
         SwitchPreference preference = findPreference("auto_download_lyrics");
-        if (preference == null) {
-            return;
+        if (preference != null) {
+            preference.setChecked(Preferences.isAutoDownloadLyricsEnabled());
+            preference.setOnPreferenceChangeListener((pref, newValue) -> {
+                if (newValue instanceof Boolean) {
+                    Preferences.setAutoDownloadLyricsEnabled((Boolean) newValue);
+                }
+                return true;
+            });
         }
-
-        preference.setChecked(Preferences.isAutoDownloadLyricsEnabled());
-        preference.setOnPreferenceChangeListener((pref, newValue) -> {
-            if (newValue instanceof Boolean) {
-                Preferences.setAutoDownloadLyricsEnabled((Boolean) newValue);
-            }
-            return true;
-        });
     }
 
     private void getScanStatus() {
-        settingViewModel.getScanStatus(new ScanCallback() {
-            @Override
-            public void onError(Exception exception) {
-                findPreference("scan_library").setSummary(exception.getMessage());
-            }
+        Preference pref = findPreference("scan_library");
+        if (pref != null) {
+            settingViewModel.getScanStatus(new ScanCallback() {
+                @Override
+                public void onError(Exception exception) {
+                    Preference p = findPreference("scan_library");
+                    if (p != null) p.setSummary(exception.getMessage());
+                }
 
-            @Override
-            public void onSuccess(boolean isScanning, long count) {
-                findPreference("scan_library").setSummary(getString(R.string.settings_scan_result, count));
-                if (isScanning) getScanStatus();
-            }
-        });
+                @Override
+                public void onSuccess(boolean isScanning, long count) {
+                    Preference p = findPreference("scan_library");
+                    if (p != null) p.setSummary(getString(R.string.settings_scan_result, count));
+                    if (isScanning) getScanStatus();
+                }
+            });
+        }
     }
 
     private void actionKeepScreenOn() {
-        findPreference("always_on_display").setOnPreferenceChangeListener((preference, newValue) -> {
-            if (newValue instanceof Boolean) {
-                if ((Boolean) newValue) {
-                    activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-                } else {
-                    activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        Preference pref = findPreference("always_on_display");
+        if (pref != null) {
+            pref.setOnPreferenceChangeListener((preference, newValue) -> {
+                if (newValue instanceof Boolean) {
+                    if ((Boolean) newValue) {
+                        activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                    } else {
+                        activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                    }
                 }
-            }
-            return true;
-        });
+                return true;
+            });
+        }
     }
 
     private final ServiceConnection serviceConnection = new ServiceConnection() {
@@ -595,6 +720,16 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 return true;
             });
         }
+    }
+
+    @Override
+    public boolean onPreferenceStartScreen(PreferenceFragmentCompat caller, PreferenceScreen pref) {
+        Bundle args = new Bundle();
+        args.putString(PreferenceFragmentCompat.ARG_PREFERENCE_ROOT, pref.getKey());
+        
+        NavController navController = NavHostFragment.findNavController(this);
+        navController.navigate(R.id.settingsFragment, args);
+        return true;
     }
 
     @Override

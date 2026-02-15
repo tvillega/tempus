@@ -59,12 +59,21 @@ public class PlayerBottomSheetFragment extends Fragment {
 
         playerBottomSheetViewModel = new ViewModelProvider(requireActivity()).get(PlayerBottomSheetViewModel.class);
 
-        customizeBottomSheetBackground();
         customizeBottomSheetAction();
         initViewPager();
         setHeaderBookmarksButton();
+        initFavoriteButton();
 
         return view;
+    }
+
+    private void initFavoriteButton() {
+        playerBottomSheetViewModel.getLiveMedia().observe(getViewLifecycleOwner(), media -> {
+            if (media != null && bind != null) {
+                bind.playerHeaderLayout.buttonFavoriteMini.setChecked(media.getStarred() != null);
+                bind.playerHeaderLayout.buttonFavoriteMini.setOnClickListener(v -> playerBottomSheetViewModel.setFavorite(requireContext(), media));
+            }
+        });
     }
 
     @Override
@@ -85,10 +94,6 @@ public class PlayerBottomSheetFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         bind = null;
-    }
-
-    private void customizeBottomSheetBackground() {
-        bind.playerHeaderLayout.getRoot().setBackgroundColor(SurfaceColors.getColorForElevation(requireContext(), 8));
     }
 
     private void customizeBottomSheetAction() {
@@ -245,12 +250,12 @@ public class PlayerBottomSheetFragment extends Fragment {
     }
 
     private void setContentDuration(long duration) {
-        bind.playerHeaderLayout.playerHeaderSeekBar.setMax((int) (duration / 1000));
+        bind.playerHeaderLayout.playerHeaderProgressBar.setMax((int) (duration / 1000));
     }
 
     private void setProgress(MediaBrowser mediaBrowser) {
         if (bind != null)
-            bind.playerHeaderLayout.playerHeaderSeekBar.setProgress((int) (mediaBrowser.getCurrentPosition() / 1000), true);
+            bind.playerHeaderLayout.playerHeaderProgressBar.setProgress((int) (mediaBrowser.getCurrentPosition() / 1000), true);
     }
 
     private void setPlayingState(boolean isPlaying) {
@@ -306,6 +311,20 @@ public class PlayerBottomSheetFragment extends Fragment {
     public void setPlayerControllerVerticalPagerDraggableState(Boolean isDraggable) {
         ViewPager2 playerControllerVerticalPager = (ViewPager2) bind.playerBodyLayout.playerBodyBottomSheetViewPager;
         playerControllerVerticalPager.setUserInputEnabled(isDraggable);
+    }
+
+    public void setBodyVisibility(boolean visible) {
+        if (bind != null) {
+            bind.playerBodyLayout.getRoot().setVisibility(visible ? View.VISIBLE : View.GONE);
+        }
+    }
+
+    public void setMiniPlayerWidth(int width) {
+        if (bind != null) {
+            ViewGroup.LayoutParams params = bind.playerHeaderLayout.getRoot().getLayoutParams();
+            params.width = width;
+            bind.playerHeaderLayout.getRoot().setLayoutParams(params);
+        }
     }
 
     private void defineProgressBarHandler(MediaBrowser mediaBrowser) {

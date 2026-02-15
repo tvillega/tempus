@@ -2,9 +2,13 @@ package com.cappielloantonio.tempo.util;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.InsetDrawable;
+import android.util.TypedValue;
 
+import androidx.annotation.AttrRes;
+import androidx.annotation.ColorInt;
 import androidx.core.os.LocaleListCompat;
 import androidx.recyclerview.widget.DividerItemDecoration;
 
@@ -110,6 +114,17 @@ public class UIUtil {
         }
         SimpleDateFormat formatter = new SimpleDateFormat("dd MMM, yyyy", Locale.getDefault());
         return formatter.format(date);
+    }
+
+    @ColorInt
+    public static int getThemeColor(Context context, @AttrRes int attr) {
+        TypedValue typedValue = new TypedValue();
+        context.getTheme().resolveAttribute(attr, typedValue, true);
+        return typedValue.data;
+    }
+
+    public static int dpToPx(Context context, int dp) {
+        return (int) (dp * context.getResources().getDisplayMetrics().density);
     }
 
 }

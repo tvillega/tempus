@@ -87,6 +87,8 @@ object Preferences {
     private const val SORT_SEARCH_CHRONOLOGICALLY= "sort_search_chronologically"
     private const val ARTIST_DISPLAY_BIOGRAPHY= "artist_display_biography"
     private const val NETWORK_PING_TIMEOUT = "network_ping_timeout_base"
+    private const val DOCK_ITEMS = "dock_items"
+    private const val ACCENT_COLOR = "accent_color"
     
 
     @JvmStatic
@@ -723,5 +725,35 @@ object Preferences {
     @JvmStatic
     fun setArtistDisplayBiography(displayBiographyEnabled: Boolean) {
         App.getInstance().preferences.edit().putBoolean(ARTIST_DISPLAY_BIOGRAPHY, displayBiographyEnabled).apply()
+    }
+
+    @JvmStatic
+    fun getDockItems(): List<String> {
+        val json = App.getInstance().preferences.getString(DOCK_ITEMS, null)
+        if (json == null) {
+            return listOf(
+                Constants.DOCK_ITEM_HOME,
+                Constants.DOCK_ITEM_SEARCH,
+                Constants.DOCK_ITEM_LIBRARY,
+                Constants.DOCK_ITEM_DOWNLOADS,
+                Constants.DOCK_ITEM_SETTINGS
+            )
+        }
+        return Gson().fromJson(json, object : com.google.gson.reflect.TypeToken<List<String>>() {}.type)
+    }
+
+    @JvmStatic
+    fun setDockItems(items: List<String>) {
+        App.getInstance().preferences.edit().putString(DOCK_ITEMS, Gson().toJson(items)).apply()
+    }
+
+    @JvmStatic
+    fun getAccentColor(): Int {
+        return App.getInstance().preferences.getInt(ACCENT_COLOR, -1)
+    }
+
+    @JvmStatic
+    fun setAccentColor(color: Int) {
+        App.getInstance().preferences.edit().putInt(ACCENT_COLOR, color).apply()
     }
 }

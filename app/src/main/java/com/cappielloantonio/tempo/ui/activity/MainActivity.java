@@ -14,6 +14,9 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.splashscreen.SplashScreen;
@@ -50,6 +53,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.color.DynamicColors;
 import com.google.common.util.concurrent.MoreExecutors;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 
@@ -62,12 +66,13 @@ public class MainActivity extends BaseActivity {
 
     private FragmentManager fragmentManager;
     private NavHostFragment navHostFragment;
-    private BottomNavigationView bottomNavigationView;
     public NavController navController;
     private BottomSheetBehavior bottomSheetBehavior;
     private boolean isLandscape = false;
     private AssetLinkNavigator assetLinkNavigator;
     private AssetLinkUtil.AssetLink pendingAssetLink;
+
+    private ViewGroup dockContainer;
 
     ConnectivityStatusBroadcastReceiver connectivityStatusBroadcastReceiver;
     private Intent pendingDownloadPlaybackIntent;
@@ -75,7 +80,16 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         SplashScreen.installSplashScreen(this);
-        DynamicColors.applyToActivityIfAvailable(this);
+        
+        int accentColor = Preferences.getAccentColor();
+        if (accentColor != -1) {
+            com.google.android.material.color.DynamicColors.applyToActivityIfAvailable(this, 
+                new com.google.android.material.color.DynamicColorsOptions.Builder()
+                    .setContentBasedSource(android.graphics.Bitmap.createBitmap(new int[]{accentColor}, 1, 1, android.graphics.Bitmap.Config.ARGB_8888))
+                    .build());
+        } else {
+            DynamicColors.applyToActivityIfAvailable(this);
+        }
 
         super.onCreate(savedInstanceState);
 
@@ -147,15 +161,6 @@ public class MainActivity extends BaseActivity {
         } else {
             goToLogin();
         }
-
-        // Set bottom navigation height
-        if (isLandscape) {
-            ViewGroup.LayoutParams layoutParams = bottomNavigationView.getLayoutParams();
-            Rect windowRect = new Rect();
-            bottomNavigationView.getWindowVisibleDisplayFrame(windowRect);
-            layoutParams.width = windowRect.height();
-            bottomNavigationView.setLayoutParams(layoutParams);
-        }
     }
 
     // BOTTOM SHEET/NAVIGATION
@@ -216,11 +221,17 @@ public class MainActivity extends BaseActivity {
                             resetMusicSession();
                             break;
                         case BottomSheetBehavior.STATE_COLLAPSED:
-                            if (playerBottomSheetFragment != null)
+                            if (playerBottomSheetFragment != null) {
                                 playerBottomSheetFragment.goBackToFirstPage();
+                                playerBottomSheetFragment.setBodyVisibility(false);
+                            }
+                            break;
+                        case BottomSheetBehavior.STATE_EXPANDED:
+                            if (playerBottomSheetFragment != null) {
+                                playerBottomSheetFragment.setBodyVisibility(true);
+                            }
                             break;
                         case BottomSheetBehavior.STATE_SETTLING:
-                        case BottomSheetBehavior.STATE_EXPANDED:
                         case BottomSheetBehavior.STATE_DRAGGING:
                         case BottomSheetBehavior.STATE_HALF_EXPANDED:
                             break;
@@ -242,6 +253,13 @@ public class MainActivity extends BaseActivity {
             float condensedSlideOffset = Math.max(0.0f, Math.min(0.2f, slideOffset - 0.2f)) / 0.2f;
             playerBottomSheetFragment.getPlayerHeader().setAlpha(1 - condensedSlideOffset);
             playerBottomSheetFragment.getPlayerHeader().setVisibility(condensedSlideOffset > 0.99 ? View.GONE : View.VISIBLE);
+            
+            // Show body during slide if expanding
+            if (slideOffset > 0.01) {
+                playerBottomSheetFragment.setBodyVisibility(true);
+            } else if (slideOffset <= 0) {
+                playerBottomSheetFragment.setBodyVisibility(false);
+            }
         }
     }
 
@@ -249,42 +267,143 @@ public class MainActivity extends BaseActivity {
         if (slideOffset < 0) return;
 
         if (navigationHeight == 0) {
-            navigationHeight = bind.bottomNavigation.getHeight();
+            navigationHeight = bind.navigationDock.dockCard.getHeight() + 200;
         }
 
-        float slideY = navigationHeight - navigationHeight * (1 - slideOffset);
+        float slideY = navigationHeight * slideOffset;
 
-        bind.bottomNavigation.setTranslationY(slideY);
+        bind.navigationDock.dockCard.setTranslationY(slideY);
     }
 
     private void initNavigation() {
-        bottomNavigationView = findViewById(R.id.bottom_navigation);
+        dockContainer = bind.navigationDock.dockItemsContainer;
         navHostFragment = (NavHostFragment) fragmentManager.findFragmentById(R.id.nav_host_fragment);
         navController = Objects.requireNonNull(navHostFragment).getNavController();
 
-        /*
-         * In questo modo intercetto il cambio schermata tramite navbar e se il bottom sheet è aperto,
-         * lo chiudo
-         */
         navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
             if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED && (
                     destination.getId() == R.id.homeFragment ||
                             destination.getId() == R.id.libraryFragment ||
-                            destination.getId() == R.id.downloadFragment)
+                            destination.getId() == R.id.downloadFragment ||
+                            destination.getId() == R.id.albumCatalogueFragment ||
+                            destination.getId() == R.id.playlistCatalogueFragment ||
+                            destination.getId() == R.id.searchFragment)
             ) {
                 bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
             }
+            updateDockActiveState(destination.getId());
         });
 
-        NavigationUI.setupWithNavController(bottomNavigationView, navController);
+        bind.navigationDock.dockCard.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+            int width = right - left;
+            if (width > 0) {
+                PlayerBottomSheetFragment fragment = (PlayerBottomSheetFragment) getSupportFragmentManager().findFragmentByTag("PlayerBottomSheet");
+                if (fragment != null) {
+                    fragment.setMiniPlayerWidth(width + 100);
+                }
+            }
+        });
+
+        setupDock();
+    }
+
+    private void setupDock() {
+        dockContainer.removeAllViews();
+        if (dockContainer instanceof LinearLayout) {
+            ((LinearLayout) dockContainer).setOrientation(isLandscape ? LinearLayout.VERTICAL : LinearLayout.HORIZONTAL);
+        }
+        List<String> items = new java.util.ArrayList<>(Preferences.getDockItems());
+        
+        // Ensure mandatory items are present if they were somehow excluded in saved prefs
+        if (!items.contains(Constants.DOCK_ITEM_HOME)) items.add(Constants.DOCK_ITEM_HOME);
+        if (!items.contains(Constants.DOCK_ITEM_SEARCH)) items.add(Constants.DOCK_ITEM_SEARCH);
+        if (!items.contains(Constants.DOCK_ITEM_SETTINGS)) items.add(Constants.DOCK_ITEM_SETTINGS);
+
+        for (String item : items) {
+            View dockItemView = getLayoutInflater().inflate(R.layout.item_dock_nav, dockContainer, false);
+            ImageView icon = dockItemView.findViewById(R.id.dock_item_icon);
+            TextView label = dockItemView.findViewById(R.id.dock_item_label);
+            
+            int fragmentId = getFragmentId(item);
+            icon.setImageResource(getDockIcon(item));
+            label.setText(getDockLabel(item));
+            
+            dockItemView.setOnClickListener(v -> {
+                if (navController.getCurrentDestination() == null || navController.getCurrentDestination().getId() != fragmentId) {
+                    navController.navigate(fragmentId);
+                }
+            });
+            dockItemView.setTag(fragmentId);
+            dockContainer.addView(dockItemView);
+        }
+        updateDockActiveState(navController.getCurrentDestination() != null ? navController.getCurrentDestination().getId() : -1);
+    }
+
+    private String getDockLabel(String item) {
+        switch (item) {
+            case Constants.DOCK_ITEM_LIBRARY: return "Library";
+            case Constants.DOCK_ITEM_DOWNLOADS: return "Downloads";
+            case Constants.DOCK_ITEM_ALBUMS: return "Albums";
+            case Constants.DOCK_ITEM_PLAYLISTS: return "Playlists";
+            case Constants.DOCK_ITEM_SEARCH: return "Search";
+            case Constants.DOCK_ITEM_SETTINGS: return "Settings";
+            default: return "Home";
+        }
+    }
+
+    private int getFragmentId(String item) {
+        switch (item) {
+            case Constants.DOCK_ITEM_LIBRARY: return R.id.libraryFragment;
+            case Constants.DOCK_ITEM_DOWNLOADS: return R.id.downloadFragment;
+            case Constants.DOCK_ITEM_ALBUMS: return R.id.albumCatalogueFragment;
+            case Constants.DOCK_ITEM_PLAYLISTS: return R.id.playlistCatalogueFragment;
+            case Constants.DOCK_ITEM_SEARCH: return R.id.searchFragment;
+            case Constants.DOCK_ITEM_SETTINGS: return R.id.settingsFragment;
+            default: return R.id.homeFragment;
+        }
+    }
+
+    private int getDockIcon(String item) {
+        switch (item) {
+            case Constants.DOCK_ITEM_LIBRARY: return R.drawable.ic_graphic_eq;
+            case Constants.DOCK_ITEM_DOWNLOADS: return R.drawable.ic_file_download;
+            case Constants.DOCK_ITEM_ALBUMS: return R.drawable.ic_placeholder_album;
+            case Constants.DOCK_ITEM_PLAYLISTS: return R.drawable.ic_playlist_add;
+            case Constants.DOCK_ITEM_SEARCH: return R.drawable.ic_search;
+            case Constants.DOCK_ITEM_SETTINGS: return R.drawable.ic_settings;
+            default: return R.drawable.ic_home;
+        }
+    }
+
+    private void updateDockActiveState(int activeId) {
+        int colorOnPrimaryContainer = com.cappielloantonio.tempo.util.UIUtil.getThemeColor(this, com.google.android.material.R.attr.colorOnPrimaryContainer);
+        int colorOnSurfaceVariant = com.cappielloantonio.tempo.util.UIUtil.getThemeColor(this, com.google.android.material.R.attr.colorOnSurfaceVariant);
+        int colorOnSurface = com.cappielloantonio.tempo.util.UIUtil.getThemeColor(this, com.google.android.material.R.attr.colorOnSurface);
+
+        for (int i = 0; i < dockContainer.getChildCount(); i++) {
+            View child = dockContainer.getChildAt(i);
+            View root = child.findViewById(R.id.dock_item_root);
+            ImageView icon = child.findViewById(R.id.dock_item_icon);
+            TextView label = child.findViewById(R.id.dock_item_label);
+            
+            if (child.getTag() instanceof Integer && (Integer)child.getTag() == activeId) {
+                root.setBackgroundResource(R.drawable.bg_dock_item_selected);
+                icon.setAlpha(1.0f);
+                label.setAlpha(1.0f);
+                icon.setColorFilter(colorOnPrimaryContainer);
+                label.setTextColor(colorOnPrimaryContainer);
+            } else {
+                root.setBackground(null);
+                icon.setAlpha(0.6f);
+                label.setAlpha(0.6f);
+                icon.setColorFilter(colorOnSurfaceVariant);
+                label.setTextColor(colorOnSurface);
+            }
+        }
     }
 
     public void setBottomNavigationBarVisibility(boolean visibility) {
-        if (visibility) {
-            bottomNavigationView.setVisibility(View.VISIBLE);
-        } else {
-            bottomNavigationView.setVisibility(View.GONE);
-        }
+        bind.navigationDock.dockCard.setVisibility(visibility ? View.VISIBLE : View.GONE);
     }
 
     private void initService() {
@@ -321,7 +440,7 @@ public class MainActivity extends BaseActivity {
     }
 
     private void goToHome() {
-        bottomNavigationView.setVisibility(View.VISIBLE);
+        setBottomNavigationBarVisibility(true);
 
         if (Objects.requireNonNull(navController.getCurrentDestination()).getId() == R.id.landingFragment) {
             navController.navigate(R.id.action_landingFragment_to_homeFragment);

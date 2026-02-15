@@ -55,9 +55,6 @@ public class ToolbarFragment extends Fragment {
         if (item.getItemId() == R.id.action_search) {
             activity.navController.navigate(R.id.searchFragment);
             return true;
-        } else if (item.getItemId() == R.id.action_settings) {
-            activity.navController.navigate(R.id.settingsFragment);
-            return true;
         }
 
         return false;
