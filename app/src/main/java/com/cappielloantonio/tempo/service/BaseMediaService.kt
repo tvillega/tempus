@@ -74,8 +74,27 @@ open class BaseMediaService : MediaLibraryService() {
                 widgetUpdateScheduled = false
                 return
             }
+            
+            checkScrobbleThreshold(player)
             updateWidget(player)
             widgetUpdateHandler.postDelayed(this, WIDGET_UPDATE_INTERVAL_MS)
+        }
+    }
+
+    private fun checkScrobbleThreshold(player: Player) {
+        if (currentTrackScrobbled) return
+        if (player.mediaMetadata.extras?.getString("type") != Constants.MEDIA_TYPE_MUSIC) return
+        
+        val duration = player.duration
+        val position = player.currentPosition
+        
+        if (duration > 0 && position > 0) {
+            val threshold = Preferences.getScrobbleThreshold()
+            if (position * 100 / duration >= threshold) {
+                currentTrackScrobbled = true
+                MediaManager.scrobble(player.currentMediaItem, true)
+                MediaManager.saveChronology(player.currentMediaItem)
+            }
         }
     }
 
@@ -87,6 +106,7 @@ open class BaseMediaService : MediaLibraryService() {
     }
 
     private val binder = LocalBinder()
+    private var currentTrackScrobbled = false
 
     open fun playerInitHook() {
         initializeExoPlayer()
@@ -143,6 +163,7 @@ open class BaseMediaService : MediaLibraryService() {
         player.addListener(object : Player.Listener {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                 Log.d(TAG, "onMediaItemTransition" + player.currentMediaItemIndex)
+                currentTrackScrobbled = false
                 if (mediaItem == null) return
 
                 if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_SEEK || reason == Player.MEDIA_ITEM_TRANSITION_REASON_AUTO) {
@@ -314,8 +335,10 @@ open class BaseMediaService : MediaLibraryService() {
                 super.onPlaybackStateChanged(playbackState)
                 if (!player.hasNextMediaItem() &&
                     playbackState == Player.STATE_ENDED &&
-                    player.mediaMetadata.extras?.getString("type") == Constants.MEDIA_TYPE_MUSIC
+                    player.mediaMetadata.extras?.getString("type") == Constants.MEDIA_TYPE_MUSIC &&
+                    !currentTrackScrobbled
                 ) {
+                    currentTrackScrobbled = true
                     MediaManager.scrobble(player.currentMediaItem, true)
                     MediaManager.saveChronology(player.currentMediaItem)
                 }
@@ -331,7 +354,8 @@ open class BaseMediaService : MediaLibraryService() {
                 super.onPositionDiscontinuity(oldPosition, newPosition, reason)
 
                 if (reason == Player.DISCONTINUITY_REASON_AUTO_TRANSITION) {
-                    if (oldPosition.mediaItem?.mediaMetadata?.extras?.getString("type") == Constants.MEDIA_TYPE_MUSIC) {
+                    if (oldPosition.mediaItem?.mediaMetadata?.extras?.getString("type") == Constants.MEDIA_TYPE_MUSIC && !currentTrackScrobbled) {
+                        currentTrackScrobbled = true
                         MediaManager.scrobble(oldPosition.mediaItem, true)
                         MediaManager.saveChronology(oldPosition.mediaItem)
                     }

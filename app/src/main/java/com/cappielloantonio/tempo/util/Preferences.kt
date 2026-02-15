@@ -61,6 +61,7 @@ object Preferences {
     private const val AUDIO_TRANSCODE_FORMAT_DOWNLOAD = "audio_transcode_format_download"
     private const val SHARE = "share"
     private const val SCROBBLING = "scrobbling"
+    private const val SCROBBLE_THRESHOLD = "scrobble_threshold"
     private const val ESTIMATE_CONTENT_LENGTH = "estimate_content_length"
     private const val BUFFERING_STRATEGY = "buffering_strategy"
     private const val SKIP_MIN_STAR_RATING = "skip_min_star_rating"
@@ -555,6 +556,16 @@ object Preferences {
     @JvmStatic
     fun isScrobblingEnabled(): Boolean {
         return App.getInstance().preferences.getBoolean(SCROBBLING, true)
+    }
+
+    @JvmStatic
+    fun getScrobbleThreshold(): Int {
+        return App.getInstance().preferences.getInt(SCROBBLE_THRESHOLD, 90)
+    }
+
+    @JvmStatic
+    fun setScrobbleThreshold(threshold: Int) {
+        App.getInstance().preferences.edit().putInt(SCROBBLE_THRESHOLD, threshold).apply()
     }
 
     @JvmStatic
