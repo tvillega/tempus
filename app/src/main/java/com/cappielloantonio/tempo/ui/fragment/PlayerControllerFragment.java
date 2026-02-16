@@ -105,7 +105,7 @@ public class PlayerControllerFragment extends Fragment {
 
     private final android.content.SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener = (sharedPreferences, key) -> {
         if ("now_playing_metadata".equals(key)) {
-            if (mediaBrowserListenableFuture != null && mediaBrowserListenableFuture.isDone()) {
+            if (bind != null && mediaBrowserListenableFuture != null && mediaBrowserListenableFuture.isDone()) {
                 try {
                     MediaBrowser browser = mediaBrowserListenableFuture.get();
                     setMetadata(browser.getMediaMetadata());
@@ -211,6 +211,7 @@ public class PlayerControllerFragment extends Fragment {
 
     private void bindMediaController() {
         mediaBrowserListenableFuture.addListener(() -> {
+            if (bind == null) return;
             try {
                 MediaBrowser mediaBrowser = mediaBrowserListenableFuture.get();
 

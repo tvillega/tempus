@@ -91,6 +91,9 @@ object Preferences {
     private const val DOCK_ITEMS = "dock_items"
     private const val ACCENT_COLOR = "accent_color"
     private const val NOW_PLAYING_METADATA = "now_playing_metadata"
+    private const val PLAY_NEXT_BEHAVIOR = "play_next_behavior"
+    const val PLAY_NEXT_BEHAVIOR_TOP = "top"
+    const val PLAY_NEXT_BEHAVIOR_SEQUENTIAL = "sequential"
     
 
     @JvmStatic
@@ -785,5 +788,15 @@ object Preferences {
     @JvmStatic
     fun setNowPlayingMetadata(items: List<String>) {
         App.getInstance().preferences.edit().putString(NOW_PLAYING_METADATA, Gson().toJson(items)).apply()
+    }
+
+    @JvmStatic
+    fun getPlayNextBehavior(): String {
+        return App.getInstance().preferences.getString(PLAY_NEXT_BEHAVIOR, PLAY_NEXT_BEHAVIOR_TOP) ?: PLAY_NEXT_BEHAVIOR_TOP
+    }
+
+    @JvmStatic
+    fun setPlayNextBehavior(behavior: String) {
+        App.getInstance().preferences.edit().putString(PLAY_NEXT_BEHAVIOR, behavior).apply()
     }
 }

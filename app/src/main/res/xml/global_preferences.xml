@@ -393,6 +393,17 @@
                 android:key="auto_download_lyrics"
                 app:icon="@drawable/ic_lyrics" />
 
+            <ListPreference
+                app:defaultValue="top"
+                app:dialogTitle="@string/settings_play_next_behavior_title"
+                app:entries="@array/play_next_behavior_titles"
+                app:entryValues="@array/play_next_behavior_values"
+                app:key="play_next_behavior"
+                app:title="@string/settings_play_next_behavior_title"
+                app:summary="@string/settings_play_next_behavior_summary"
+                app:useSimpleSummaryProvider="true"
+                app:icon="@drawable/ic_navigate_next" />
+
             <SwitchPreference
                 android:title="@string/settings_scrobble_title"
                 android:defaultValue="true"

@@ -409,10 +409,8 @@ open class BaseMediaService : MediaLibraryService() {
 
     override fun onTaskRemoved(rootIntent: Intent?) {
         val player = mediaLibrarySession.player
-
-        if (!player.playWhenReady || player.mediaItemCount == 0) {
-            stopSelf()
-        }
+        player.pause()
+        stopSelf()
     }
 
     override fun onCreate() {

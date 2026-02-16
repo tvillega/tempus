@@ -46,6 +46,7 @@ public class MediaManager {
     private static final String TAG = "MediaManager";
     private static WeakReference<MediaBrowser> attachedBrowserRef = new WeakReference<>(null);
     public static AtomicBoolean justStarted = new AtomicBoolean(false);
+    private static int lastPlayNextInsertedIndex = -1;
 
     private static final ExecutorService backgroundExecutor = Executors.newSingleThreadExecutor();
 
@@ -63,6 +64,10 @@ public class MediaManager {
                     browser.addListener(new Player.Listener() {
                         @Override
                         public void onEvents(@NonNull Player player, @NonNull Player.Events events) {
+                            if (events.contains(Player.EVENT_MEDIA_ITEM_TRANSITION)) {
+                                lastPlayNextInsertedIndex = -1;
+                            }
+
                             if (events.contains(Player.EVENT_MEDIA_ITEM_TRANSITION)
                                     || events.contains(Player.EVENT_PLAY_WHEN_READY_CHANGED)
                                     || events.contains(Player.EVENT_PLAYBACK_STATE_CHANGED)) {
@@ -308,8 +313,20 @@ public class MediaManager {
                         Log.e(TAG, "enqueue");
                         MediaBrowser browser = mediaBrowserListenableFuture.get();
                         if (playImmediatelyAfter && browser.getNextMediaItemIndex() != -1) {
-                            enqueueDatabase(media, false, browser.getNextMediaItemIndex());
-                            browser.addMediaItems(browser.getNextMediaItemIndex(), MappingUtil.mapMediaItems(media));
+                            int insertIndex;
+                            if (Preferences.getPlayNextBehavior().equals(Preferences.PLAY_NEXT_BEHAVIOR_SEQUENTIAL)) {
+                                if (lastPlayNextInsertedIndex == -1) {
+                                    insertIndex = browser.getNextMediaItemIndex();
+                                } else {
+                                    insertIndex = Math.min(lastPlayNextInsertedIndex, browser.getMediaItemCount());
+                                }
+                                lastPlayNextInsertedIndex = insertIndex + media.size();
+                            } else {
+                                insertIndex = browser.getNextMediaItemIndex();
+                                lastPlayNextInsertedIndex = insertIndex + media.size();
+                            }
+                            enqueueDatabase(media, false, insertIndex);
+                            browser.addMediaItems(insertIndex, MappingUtil.mapMediaItems(media));
                         } else {
                             enqueueDatabase(media, false, mediaBrowserListenableFuture.get().getMediaItemCount());
                             mediaBrowserListenableFuture.get().addMediaItems(MappingUtil.mapMediaItems(media));
@@ -330,8 +347,20 @@ public class MediaManager {
                         Log.e(TAG, "enqueue");
                         MediaBrowser browser = mediaBrowserListenableFuture.get();
                         if (playImmediatelyAfter && browser.getNextMediaItemIndex() != -1) {
-                            enqueueDatabase(media, false, browser.getNextMediaItemIndex());
-                            browser.addMediaItem(browser.getNextMediaItemIndex(), MappingUtil.mapMediaItem(media));
+                            int insertIndex;
+                            if (Preferences.getPlayNextBehavior().equals(Preferences.PLAY_NEXT_BEHAVIOR_SEQUENTIAL)) {
+                                if (lastPlayNextInsertedIndex == -1) {
+                                    insertIndex = browser.getNextMediaItemIndex();
+                                } else {
+                                    insertIndex = Math.min(lastPlayNextInsertedIndex, browser.getMediaItemCount());
+                                }
+                                lastPlayNextInsertedIndex = insertIndex + 1;
+                            } else {
+                                insertIndex = browser.getNextMediaItemIndex();
+                                lastPlayNextInsertedIndex = insertIndex + 1;
+                            }
+                            enqueueDatabase(media, false, insertIndex);
+                            browser.addMediaItem(insertIndex, MappingUtil.mapMediaItem(media));
                         } else {
                             enqueueDatabase(media, false, mediaBrowserListenableFuture.get().getMediaItemCount());
                             mediaBrowserListenableFuture.get().addMediaItem(MappingUtil.mapMediaItem(media));

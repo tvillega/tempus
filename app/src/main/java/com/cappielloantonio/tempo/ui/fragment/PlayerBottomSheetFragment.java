@@ -134,7 +134,7 @@ public class PlayerBottomSheetFragment extends Fragment {
         setMetadata(mediaBrowser.getMediaMetadata());
         setContentDuration(mediaBrowser.getContentDuration());
         setPlayingState(mediaBrowser.isPlaying());
-        setHeaderMediaController();
+        setHeaderMediaController(mediaBrowser);
         setHeaderNextButtonState(mediaBrowser.hasNextMediaItem());
 
         mediaBrowser.addListener(new Player.Listener() {
@@ -263,11 +263,17 @@ public class PlayerBottomSheetFragment extends Fragment {
         runProgressBarHandler(isPlaying);
     }
 
-    private void setHeaderMediaController() {
-        bind.playerHeaderLayout.playerHeaderButton.setOnClickListener(view -> bind.getRoot().findViewById(R.id.exo_play_pause).performClick());
-        bind.playerHeaderLayout.playerHeaderNextMediaButton.setOnClickListener(view -> bind.getRoot().findViewById(R.id.exo_next).performClick());
-        bind.playerHeaderLayout.playerHeaderRewindMediaButton.setOnClickListener(view -> bind.getRoot().findViewById(R.id.exo_rew).performClick());
-        bind.playerHeaderLayout.playerHeaderFastForwardMediaButton.setOnClickListener(view -> bind.getRoot().findViewById(R.id.exo_ffwd).performClick());
+    private void setHeaderMediaController(MediaBrowser mediaBrowser) {
+        bind.playerHeaderLayout.playerHeaderButton.setOnClickListener(view -> {
+            if (mediaBrowser.isPlaying()) {
+                mediaBrowser.pause();
+            } else {
+                mediaBrowser.play();
+            }
+        });
+        bind.playerHeaderLayout.playerHeaderNextMediaButton.setOnClickListener(view -> mediaBrowser.seekToNext());
+        bind.playerHeaderLayout.playerHeaderRewindMediaButton.setOnClickListener(view -> mediaBrowser.seekBack());
+        bind.playerHeaderLayout.playerHeaderFastForwardMediaButton.setOnClickListener(view -> mediaBrowser.seekForward());
     }
 
     private void setHeaderNextButtonState(boolean isEnabled) {
