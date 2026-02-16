@@ -75,8 +75,11 @@ public class PlaylistHorizontalAdapter extends RecyclerView.Adapter<PlaylistHori
     public void onBindViewHolder(ViewHolder holder, int position) {
         Playlist playlist = playlists.get(position);
 
+        holder.itemView.setTag(playlist.getId());
         holder.item.playlistTitleTextView.setText(playlist.getName());
         holder.item.playlistSubtitleTextView.setText(holder.itemView.getContext().getString(R.string.playlist_counted_tracks, playlist.getSongCount(), MusicUtil.getReadableDurationString(playlist.getDuration(), false)));
+
+        holder.item.playlistPinnedIcon.setVisibility(playlist.isPinned() ? android.view.View.VISIBLE : android.view.View.GONE);
 
         CustomGlideRequest.Builder
                 .from(holder.itemView.getContext(), playlist.getCoverArtId(), CustomGlideRequest.ResourceType.Playlist)
@@ -96,6 +99,16 @@ public class PlaylistHorizontalAdapter extends RecyclerView.Adapter<PlaylistHori
     public void setItems(List<Playlist> playlists) {
         this.playlists = playlists;
         this.playlistsFull = new ArrayList<>(playlists);
+        sort(null);
+        notifyDataSetChanged();
+    }
+
+    public void setPinnedIds(List<String> pinnedIds) {
+        if (playlistsFull == null) return;
+        for (Playlist playlist : playlistsFull) {
+            playlist.setPinned(pinnedIds.contains(playlist.getId()));
+        }
+        sort(null);
         notifyDataSetChanged();
     }
 
@@ -137,15 +150,22 @@ public class PlaylistHorizontalAdapter extends RecyclerView.Adapter<PlaylistHori
     }
 
     public void sort(String order) {
-        switch (order) {
-            case Constants.PLAYLIST_ORDER_BY_NAME:
-                playlists.sort(Comparator.comparing(Playlist::getName));
-                break;
-            case Constants.PLAYLIST_ORDER_BY_RANDOM:
-                Collections.shuffle(playlists);
-                break;
+        Comparator<Playlist> comparator = (p1, p2) -> Boolean.compare(p2.isPinned(), p1.isPinned());
+
+        if (order != null) {
+            switch (order) {
+                case Constants.PLAYLIST_ORDER_BY_NAME:
+                    comparator = comparator.thenComparing(Playlist::getName);
+                    break;
+                case Constants.PLAYLIST_ORDER_BY_RANDOM:
+                    Collections.shuffle(playlists);
+                    return;
+            }
+        } else {
+            comparator = comparator.thenComparing(Playlist::getName);
         }
 
+        playlists.sort(comparator);
         notifyDataSetChanged();
     }
 }

@@ -277,28 +277,7 @@ public class HomeViewModel extends AndroidViewModel {
     }
 
     public LiveData<List<Playlist>> getPinnedPlaylists(LifecycleOwner owner) {
-        pinnedPlaylists.setValue(Collections.emptyList());
-
-        playlistRepository.getPlaylists(false, -1).observe(owner, remotes -> {
-            if (remotes != null && !remotes.isEmpty()) {
-                List<Playlist> playlists = new ArrayList<>(remotes);
-                String result = Preferences.getHomeSortPlaylists();
-                if (Preferences.getHomeSortPlaylists().equals(Constants.PLAYLIST_ORDER_BY_RANDOM))
-                {
-                    Collections.shuffle(playlists);
-                }
-                else {
-                    playlists.sort(Comparator.comparing(Playlist::getName));
-                }
-                List<Playlist> subsetPlaylists = playlists.size() > 5
-                        ? playlists.subList(0, 5)
-                        : playlists;
-
-                pinnedPlaylists.setValue(subsetPlaylists);
-            }
-        });
-
-        return pinnedPlaylists;
+        return playlistRepository.getPinnedPlaylists();
     }
 
     public LiveData<List<Share>> getShares(LifecycleOwner owner) {

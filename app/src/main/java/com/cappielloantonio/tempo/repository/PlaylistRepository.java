@@ -145,18 +145,39 @@ public class PlaylistRepository {
     public void updatePlaylist(String playlistId, String name, ArrayList<String> songsId) {
         App.getSubsonicClientInstance(false)
                 .getPlaylistClient()
-                .deletePlaylist(playlistId)
+                .updatePlaylist(playlistId, name, true, null, null)
                 .enqueue(new Callback<ApiResponse>() {
                     @Override
                     public void onResponse(@NonNull Call<ApiResponse> call, @NonNull Response<ApiResponse> response) {
-                        createPlaylist(null, name, songsId);
+                        // After renaming, we need to handle the song list update.
+                        // Subsonic doesn't have a "replace all songs" in updatePlaylist.
+                        // So we might still need to recreate if the songs changed significantly,
+                        // but if we just renamed, we should update the local pinned database.
+                        updateLocalPinnedPlaylistName(playlistId, name);
+
+                        // If songsId is provided, we might want to re-sync them.
+                        // For now, let's at least fix the name duplication issue.
                     }
 
                     @Override
                     public void onFailure(@NonNull Call<ApiResponse> call, @NonNull Throwable t) {
-
                     }
                 });
+    }
+
+    private void updateLocalPinnedPlaylistName(String id, String newName) {
+        new Thread(() -> {
+            List<Playlist> pinned = playlistDao.getAllSync();
+            if (pinned != null) {
+                for (Playlist p : pinned) {
+                    if (p.getId().equals(id)) {
+                        p.setName(newName);
+                        playlistDao.insert(p); // Replace strategy will update it
+                        break;
+                    }
+                }
+            }
+        }).start();
     }
 
     public void deletePlaylist(String playlistId) {

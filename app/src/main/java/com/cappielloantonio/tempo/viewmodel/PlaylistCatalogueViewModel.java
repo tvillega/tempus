@@ -19,11 +19,13 @@ public class PlaylistCatalogueViewModel extends AndroidViewModel {
     private String type;
 
     private final MutableLiveData<List<Playlist>> playlistList = new MutableLiveData<>(null);
+    private LiveData<List<Playlist>> pinnedPlaylists;
 
     public PlaylistCatalogueViewModel(@NonNull Application application) {
         super(application);
 
         playlistRepository = new PlaylistRepository();
+        pinnedPlaylists = playlistRepository.getPinnedPlaylists();
     }
 
     public LiveData<List<Playlist>> getPlaylistList(LifecycleOwner owner) {
@@ -32,6 +34,18 @@ public class PlaylistCatalogueViewModel extends AndroidViewModel {
         }
 
         return playlistList;
+    }
+
+    public LiveData<List<Playlist>> getPinnedPlaylists() {
+        return pinnedPlaylists;
+    }
+
+    public void pinPlaylist(Playlist playlist) {
+        playlistRepository.insert(playlist);
+    }
+
+    public void unpinPlaylist(Playlist playlist) {
+        playlistRepository.delete(playlist);
     }
 
     public void setType(String type) {

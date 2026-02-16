@@ -26,11 +26,17 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.cappielloantonio.tempo.R;
 import com.cappielloantonio.tempo.databinding.FragmentPlaylistCatalogueBinding;
 import com.cappielloantonio.tempo.interfaces.ClickCallback;
+import com.cappielloantonio.tempo.repository.PlaylistRepository;
+import com.cappielloantonio.tempo.subsonic.models.Playlist;
 import com.cappielloantonio.tempo.ui.activity.MainActivity;
 import com.cappielloantonio.tempo.ui.adapter.PlaylistHorizontalAdapter;
 import com.cappielloantonio.tempo.ui.dialog.PlaylistEditorDialog;
 import com.cappielloantonio.tempo.util.Constants;
 import com.cappielloantonio.tempo.viewmodel.PlaylistCatalogueViewModel;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @UnstableApi
 public class PlaylistCatalogueFragment extends Fragment implements ClickCallback {
@@ -105,6 +111,8 @@ public class PlaylistCatalogueFragment extends Fragment implements ClickCallback
         });
     }
 
+    private java.util.List<String> lastPinnedIds = new java.util.ArrayList<>();
+
     @SuppressLint("ClickableViewAccessibility")
     private void initPlaylistCatalogueView() {
         bind.playlistCatalogueRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
@@ -114,8 +122,20 @@ public class PlaylistCatalogueFragment extends Fragment implements ClickCallback
         bind.playlistCatalogueRecyclerView.setAdapter(playlistHorizontalAdapter);
 
         if (getActivity() != null) {
+            playlistCatalogueViewModel.getPinnedPlaylists().observe(getViewLifecycleOwner(), pinned -> {
+                if (pinned != null) {
+                    lastPinnedIds = pinned.stream().map(Playlist::getId).collect(Collectors.toList());
+                    playlistHorizontalAdapter.setPinnedIds(lastPinnedIds);
+                }
+            });
+
             playlistCatalogueViewModel.getPlaylistList(getViewLifecycleOwner()).observe(getViewLifecycleOwner(), playlists -> {
-                if (playlists != null) playlistHorizontalAdapter.setItems(playlists);
+                if (playlists != null) {
+                    playlistHorizontalAdapter.setItems(playlists);
+                    if (!lastPinnedIds.isEmpty()) {
+                        playlistHorizontalAdapter.setPinnedIds(lastPinnedIds);
+                    }
+                }
             });
         }
 
@@ -185,9 +205,46 @@ public class PlaylistCatalogueFragment extends Fragment implements ClickCallback
 
     @Override
     public void onPlaylistLongClick(Bundle bundle) {
-        PlaylistEditorDialog dialog = new PlaylistEditorDialog(null);
-        dialog.setArguments(bundle);
-        dialog.show(activity.getSupportFragmentManager(), null);
+        Playlist playlist = bundle.getParcelable(Constants.PLAYLIST_OBJECT);
+        if (playlist == null) return;
+
+        View anchor = bind.playlistCatalogueRecyclerView.findViewWithTag(playlist.getId());
+        if (anchor == null) anchor = bind.getRoot();
+
+        PopupMenu popup = new PopupMenu(requireContext(), anchor);
+        popup.getMenuInflater().inflate(R.menu.playlist_actions_menu, popup.getMenu());
+
+        MenuItem pinItem = popup.getMenu().findItem(R.id.menu_playlist_pin);
+        pinItem.setTitle(playlist.isPinned() ? R.string.playlist_unpin : R.string.playlist_pin);
+
+        popup.setOnMenuItemClickListener(menuItem -> {
+            if (menuItem.getItemId() == R.id.menu_playlist_pin) {
+                if (playlist.isPinned()) {
+                    playlistCatalogueViewModel.unpinPlaylist(playlist);
+                } else {
+                    playlistCatalogueViewModel.pinPlaylist(playlist);
+                }
+                return true;
+            } else if (menuItem.getItemId() == R.id.menu_playlist_edit) {
+                PlaylistEditorDialog dialog = new PlaylistEditorDialog(null);
+                dialog.setArguments(bundle);
+                dialog.show(activity.getSupportFragmentManager(), null);
+                return true;
+            } else if (menuItem.getItemId() == R.id.menu_playlist_delete) {
+                MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext());
+                builder.setTitle(R.string.menu_delete);
+                builder.setMessage(R.string.playlist_editor_dialog_action_delete_toast);
+                builder.setPositiveButton(R.string.playlist_editor_dialog_neutral_button, (dialog, which) -> {
+                    new PlaylistRepository().deletePlaylist(playlist.getId());
+                });
+                builder.setNegativeButton(R.string.playlist_editor_dialog_negative_button, null);
+                builder.show();
+                return true;
+            }
+            return false;
+        });
+
+        popup.show();
         hideKeyboard(requireView());
     }
 }

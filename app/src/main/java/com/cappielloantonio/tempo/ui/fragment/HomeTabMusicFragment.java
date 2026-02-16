@@ -1257,6 +1257,8 @@ public class HomeTabMusicFragment extends Fragment implements ClickCallback {
                     bind.pinnedPlaylistsSector.setVisibility(!playlists.isEmpty() ? View.VISIBLE : View.GONE);
 
                 playlistHorizontalAdapter.setItems(playlists);
+                java.util.List<String> ids = playlists.stream().map(com.cappielloantonio.tempo.subsonic.models.Playlist::getId).collect(java.util.stream.Collectors.toList());
+                playlistHorizontalAdapter.setPinnedIds(ids);
             }
         });
     }
@@ -1532,8 +1534,10 @@ public class HomeTabMusicFragment extends Fragment implements ClickCallback {
             MediaManager.startQueue(mediaBrowserListenableFuture, bundle.getParcelableArrayList(Constants.TRACKS_OBJECT), bundle.getInt(Constants.ITEM_POSITION));
             activity.setBottomSheetInPeek(true);
         }
-        topSongAdapter.notifyDataSetChanged();
-        starredSongAdapter.notifyDataSetChanged();
+        if (topSongAdapter != null) topSongAdapter.notifyDataSetChanged();
+        if (starredSongAdapter != null) starredSongAdapter.notifyDataSetChanged();
+        if (historyAdapter != null) historyAdapter.notifyDataSetChanged();
+        if (topPlayedSongAdapter != null) topPlayedSongAdapter.notifyDataSetChanged();
     }
 
     @Override

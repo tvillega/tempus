@@ -493,6 +493,8 @@
     <string name="song_bottom_sheet_rate">Rate</string>
     <string name="song_bottom_sheet_remove">Remove</string>
     <string name="song_bottom_sheet_share">Share</string>
+    <string name="playlist_pin">Pin</string>
+    <string name="playlist_unpin">Unpin</string>
     <string name="song_list_page_top_played">Top played songs</string>
     <string name="song_list_page_downloaded">Downloaded</string>
     <string name="song_list_page_most_played">Most played tracks</string>
@@ -587,4 +589,6 @@
 
     <string name="search_sort_title">Sort recent searches chronologically</string>
     <string name="search_sort_summary">If enabled, sort searches chronologically. Sort by name if disabled.</string>
+    <string name="menu_edit">Edit</string>
+    <string name="menu_delete">Delete</string>
 </resources>

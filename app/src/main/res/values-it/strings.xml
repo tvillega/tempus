@@ -460,6 +460,8 @@
     <string name="song_bottom_sheet_rate">Valuta</string>
     <string name="song_bottom_sheet_remove">Rimuovi</string>
     <string name="song_bottom_sheet_share">Condividi</string>
+    <string name="playlist_pin">Fissa in alto</string>
+    <string name="playlist_unpin">Rimuovi dall\'alto</string>
     <string name="song_list_page_top_played">Brani più ascoltati</string>
     <string name="song_list_page_downloaded">Scaricato</string>
     <string name="song_list_page_most_played">Tracce più riprodotte</string>
@@ -546,4 +548,6 @@
     <string name="settings_album_detail_summary">Se abilitato, mostra i dettagli dell\'album come genere, numero di canzoni, ecc. nella pagina dell\'album</string>
     <string name="settings_artist_sort_by_album_count">Ordina artisti per numero di album</string>
     <string name="settings_artist_sort_by_album_count_summary">Se abilitato, ordina gli artisti per numero di album. Ordina per nome se disabilitato.</string>
+    <string name="menu_edit">Modifica</string>
+    <string name="menu_delete">Elimina</string>
 </resources>
