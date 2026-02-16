@@ -57,5 +57,5 @@ data class NavidromeSong(
     val coverArtId: String?,
     val starred: Boolean?,
     val starredAt: String?,
-    val userRating: Int?
+    val rating: Int?
 )

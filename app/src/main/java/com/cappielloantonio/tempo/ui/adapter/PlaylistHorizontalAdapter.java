@@ -34,19 +34,24 @@ public class PlaylistHorizontalAdapter extends RecyclerView.Adapter<PlaylistHori
             List<Playlist> filteredList = new ArrayList<>();
 
             if (constraint == null || constraint.length() == 0) {
-                filteredList.addAll(playlistsFull);
+                synchronized (playlistsFull) {
+                    filteredList.addAll(playlistsFull);
+                }
             } else {
                 String filterPattern = constraint.toString().toLowerCase().trim();
 
-                for (Playlist item : playlistsFull) {
-                    if (item.getName().toLowerCase().contains(filterPattern)) {
-                        filteredList.add(item);
+                synchronized (playlistsFull) {
+                    for (Playlist item : playlistsFull) {
+                        if (item.getName() != null && item.getName().toLowerCase().contains(filterPattern)) {
+                            filteredList.add(item);
+                        }
                     }
                 }
             }
 
             FilterResults results = new FilterResults();
             results.values = filteredList;
+            results.count = filteredList.size();
 
             return results;
         }
@@ -54,14 +59,15 @@ public class PlaylistHorizontalAdapter extends RecyclerView.Adapter<PlaylistHori
         @Override
         protected void publishResults(CharSequence constraint, FilterResults results) {
             playlists.clear();
-            if (results.count > 0) playlists.addAll((List) results.values);
+            if (results.count > 0) playlists.addAll((List<Playlist>) results.values);
             notifyDataSetChanged();
         }
     };
 
     public PlaylistHorizontalAdapter(ClickCallback click) {
         this.click = click;
-        this.playlists = Collections.emptyList();
+        this.playlists = new ArrayList<>();
+        this.playlistsFull = new ArrayList<>();
     }
 
     @NonNull
@@ -97,17 +103,26 @@ public class PlaylistHorizontalAdapter extends RecyclerView.Adapter<PlaylistHori
     }
 
     public void setItems(List<Playlist> playlists) {
-        this.playlists = playlists;
-        this.playlistsFull = new ArrayList<>(playlists);
+        if (playlists == null) return;
+        synchronized (playlistsFull) {
+            this.playlistsFull.clear();
+            this.playlistsFull.addAll(playlists);
+        }
+        this.playlists.clear();
+        this.playlists.addAll(this.playlistsFull);
         sort(null);
         notifyDataSetChanged();
     }
 
     public void setPinnedIds(List<String> pinnedIds) {
-        if (playlistsFull == null) return;
-        for (Playlist playlist : playlistsFull) {
-            playlist.setPinned(pinnedIds.contains(playlist.getId()));
+        if (pinnedIds == null) return;
+        synchronized (playlistsFull) {
+            for (Playlist playlist : playlistsFull) {
+                playlist.setPinned(pinnedIds.contains(playlist.getId()));
+            }
         }
+        this.playlists.clear();
+        this.playlists.addAll(this.playlistsFull);
         sort(null);
         notifyDataSetChanged();
     }

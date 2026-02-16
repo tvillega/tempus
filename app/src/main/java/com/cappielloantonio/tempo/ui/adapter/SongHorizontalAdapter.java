@@ -190,23 +190,20 @@ public class SongHorizontalAdapter extends RecyclerView.Adapter<SongHorizontalAd
             }
         }
 
-        if (Preferences.showItemRating()) {
-            if (song.getStarred() == null && song.getUserRating() == null) {
-                holder.item.ratingIndicatorImageView.setVisibility(View.GONE);
-            }
-
+        if (song.getStarred() == null && (song.getUserRating() == null || song.getUserRating() == 0)) {
+            holder.item.ratingIndicatorImageView.setVisibility(View.GONE);
+        } else {
+            holder.item.ratingIndicatorImageView.setVisibility(View.VISIBLE);
             holder.item.preferredIcon.setVisibility(song.getStarred() != null ? View.VISIBLE : View.GONE);
-            holder.item.ratingBarLayout.setVisibility(song.getUserRating() != null ? View.VISIBLE : View.GONE);
+            holder.item.ratingBarLayout.setVisibility(song.getUserRating() != null && song.getUserRating() > 0 ? View.VISIBLE : View.GONE);
 
-            if (song.getUserRating() != null) {
+            if (song.getUserRating() != null && song.getUserRating() > 0) {
                 holder.item.oneStarIcon.setImageDrawable(AppCompatResources.getDrawable(holder.itemView.getContext(), song.getUserRating() >= 1 ? R.drawable.ic_star : R.drawable.ic_star_outlined));
                 holder.item.twoStarIcon.setImageDrawable(AppCompatResources.getDrawable(holder.itemView.getContext(), song.getUserRating() >= 2 ? R.drawable.ic_star : R.drawable.ic_star_outlined));
                 holder.item.threeStarIcon.setImageDrawable(AppCompatResources.getDrawable(holder.itemView.getContext(), song.getUserRating() >= 3 ? R.drawable.ic_star : R.drawable.ic_star_outlined));
                 holder.item.fourStarIcon.setImageDrawable(AppCompatResources.getDrawable(holder.itemView.getContext(), song.getUserRating() >= 4 ? R.drawable.ic_star : R.drawable.ic_star_outlined));
                 holder.item.fiveStarIcon.setImageDrawable(AppCompatResources.getDrawable(holder.itemView.getContext(), song.getUserRating() >= 5 ? R.drawable.ic_star : R.drawable.ic_star_outlined));
             }
-        } else {
-            holder.item.ratingIndicatorImageView.setVisibility(View.GONE);
         }
 
         bindPlaybackState(holder, song);

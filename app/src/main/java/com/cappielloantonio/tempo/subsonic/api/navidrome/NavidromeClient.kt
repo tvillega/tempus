@@ -183,7 +183,8 @@ class NavidromeClient {
             id = id,
             name = name,
             coverArtId = coverArtId ?: "ar-$id",
-            albumCount = albumCount ?: 0
+            albumCount = albumCount ?: 0,
+            starred = if (starred == true) java.util.Date() else null
         )
     }
 
@@ -207,7 +208,8 @@ class NavidromeClient {
             discNumber = discNumber,
             playCount = playCount,
             coverArtId = coverArtId ?: id,
-            userRating = userRating
+            userRating = rating,
+            starred = if (starred == true) java.util.Date() else null
         )
     }
 }

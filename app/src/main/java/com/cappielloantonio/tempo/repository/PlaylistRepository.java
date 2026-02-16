@@ -3,6 +3,7 @@ package com.cappielloantonio.tempo.repository;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
@@ -31,10 +32,37 @@ public class PlaylistRepository {
 
     public void notifyPlaylistChanged() {
         playlistUpdateTrigger.postValue(true);
+        refreshAllPlaylists();
     }
 
     @androidx.media3.common.util.UnstableApi
     private final PlaylistDao playlistDao = AppDatabase.getInstance().playlistDao();
+    private static final MutableLiveData<List<Playlist>> allPlaylistsLiveData = new MutableLiveData<>();
+
+    public LiveData<List<Playlist>> getAllPlaylists(LifecycleOwner owner) {
+        refreshAllPlaylists();
+        return allPlaylistsLiveData;
+    }
+
+    public void refreshAllPlaylists() {
+        App.getSubsonicClientInstance(false)
+                .getPlaylistClient()
+                .getPlaylists()
+                .enqueue(new Callback<ApiResponse>() {
+                    @Override
+                    public void onResponse(@NonNull Call<ApiResponse> call, @NonNull Response<ApiResponse> response) {
+                        if (response.isSuccessful() && response.body() != null && response.body().getSubsonicResponse().getPlaylists() != null) {
+                            List<Playlist> playlists = response.body().getSubsonicResponse().getPlaylists().getPlaylists();
+                            allPlaylistsLiveData.postValue(playlists);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<ApiResponse> call, @NonNull Throwable t) {
+                    }
+                });
+    }
+
     public MutableLiveData<List<Playlist>> getPlaylists(boolean random, int size) {
         MutableLiveData<List<Playlist>> listLivePlaylists = new MutableLiveData<>(new ArrayList<>());
 
@@ -171,11 +199,14 @@ public class PlaylistRepository {
                 .enqueue(new Callback<ApiResponse>() {
                     @Override
                     public void onResponse(@NonNull Call<ApiResponse> call, @NonNull Response<ApiResponse> response) {
-                        // After renaming, we need to handle the song list update.
-                        // Subsonic doesn't have a "replace all songs" in updatePlaylist.
-                        // So we might still need to recreate if the songs changed significantly,
-                        // but if we just renamed, we should update the local pinned database.
-                        updateLocalPinnedPlaylistName(playlistId, name);
+                        if (response.isSuccessful()) {
+                            // After renaming, we need to handle the song list update.
+                            // Subsonic doesn't have a "replace all songs" in updatePlaylist.
+                            // So we might still need to recreate if the songs changed significantly,
+                            // but if we just renamed, we should update the local pinned database.
+                            updateLocalPinnedPlaylistName(playlistId, name);
+                            notifyPlaylistChanged();
+                        }
 
                         // If songsId is provided, we might want to re-sync them.
                         // For now, let's at least fix the name duplication issue.
@@ -209,7 +240,7 @@ public class PlaylistRepository {
                 .enqueue(new Callback<ApiResponse>() {
                     @Override
                     public void onResponse(@NonNull Call<ApiResponse> call, @NonNull Response<ApiResponse> response) {
-
+                        if (response.isSuccessful()) notifyPlaylistChanged();
                     }
 
                     @Override
