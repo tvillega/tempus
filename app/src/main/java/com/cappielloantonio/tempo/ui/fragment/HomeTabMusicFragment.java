@@ -125,6 +125,7 @@ public class HomeTabMusicFragment extends Fragment implements ClickCallback {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        homeViewModel.refreshPinnedPlaylists();
         initSyncStarredView();
         initSyncStarredAlbumsView();
         initSyncStarredArtistsView();

@@ -26,6 +26,14 @@ public class PlaylistCatalogueViewModel extends AndroidViewModel {
 
         playlistRepository = new PlaylistRepository();
         pinnedPlaylists = playlistRepository.getPinnedPlaylists();
+
+        playlistRepository.getPlaylistUpdateTrigger().observeForever(needsRefresh -> {
+            if (needsRefresh != null && needsRefresh) {
+                playlistRepository.getPlaylists(false, -1).observeForever(playlists -> {
+                    if (playlists != null) playlistList.postValue(playlists);
+                });
+            }
+        });
     }
 
     public LiveData<List<Playlist>> getPlaylistList(LifecycleOwner owner) {
@@ -34,6 +42,10 @@ public class PlaylistCatalogueViewModel extends AndroidViewModel {
         }
 
         return playlistList;
+    }
+
+    public void refreshPlaylistList(LifecycleOwner owner) {
+        playlistRepository.getPlaylists(false, -1).observe(owner, playlistList::postValue);
     }
 
     public LiveData<List<Playlist>> getPinnedPlaylists() {

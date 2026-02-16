@@ -23,6 +23,16 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class PlaylistRepository {
+    private static final MutableLiveData<Boolean> playlistUpdateTrigger = new MutableLiveData<>();
+
+    public LiveData<Boolean> getPlaylistUpdateTrigger() {
+        return playlistUpdateTrigger;
+    }
+
+    public void notifyPlaylistChanged() {
+        playlistUpdateTrigger.postValue(true);
+    }
+
     @androidx.media3.common.util.UnstableApi
     private final PlaylistDao playlistDao = AppDatabase.getInstance().playlistDao();
     public MutableLiveData<List<Playlist>> getPlaylists(boolean random, int size) {
@@ -121,6 +131,7 @@ public class PlaylistRepository {
                     .enqueue(new Callback<ApiResponse>() {
                         @Override
                         public void onResponse(@NonNull Call<ApiResponse> call, @NonNull Response<ApiResponse> response) {
+                            if (response.isSuccessful()) notifyPlaylistChanged();
                             if (callback != null) callback.onSuccess();
                         }
 
@@ -143,7 +154,7 @@ public class PlaylistRepository {
                 .enqueue(new Callback<ApiResponse>() {
                     @Override
                     public void onResponse(@NonNull Call<ApiResponse> call, @NonNull Response<ApiResponse> response) {
-
+                        if (response.isSuccessful()) notifyPlaylistChanged();
                     }
 
                     @Override
@@ -224,6 +235,49 @@ public class PlaylistRepository {
         DeleteThreadSafe delete = new DeleteThreadSafe(playlistDao, playlist);
         Thread thread = new Thread(delete);
         thread.start();
+    }
+
+    @androidx.media3.common.util.UnstableApi
+    public void updatePinnedPlaylists() {
+        updatePinnedPlaylists(null);
+    }
+
+    @androidx.media3.common.util.UnstableApi
+    public void updatePinnedPlaylists(List<String> forceIds) {
+        new Thread(() -> {
+            List<Playlist> pinned = playlistDao.getAllSync();
+            if (pinned != null && !pinned.isEmpty()) {
+                App.getSubsonicClientInstance(false)
+                        .getPlaylistClient()
+                        .getPlaylists()
+                        .enqueue(new Callback<ApiResponse>() {
+                            @Override
+                            public void onResponse(@NonNull Call<ApiResponse> call, @NonNull Response<ApiResponse> response) {
+                                if (response.isSuccessful() && response.body() != null && response.body().getSubsonicResponse().getPlaylists() != null) {
+                                    List<Playlist> remotes = response.body().getSubsonicResponse().getPlaylists().getPlaylists();
+                                    new Thread(() -> {
+                                        for (Playlist p : pinned) {
+                                            for (Playlist r : remotes) {
+                                                if (p.getId().equals(r.getId())) {
+                                                    p.setName(r.getName());
+                                                    p.setSongCount(r.getSongCount());
+                                                    p.setDuration(r.getDuration());
+                                                    p.setCoverArtId(r.getCoverArtId());
+                                                    playlistDao.insert(p);
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }).start();
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(@NonNull Call<ApiResponse> call, @NonNull Throwable t) {
+                            }
+                        });
+            }
+        }).start();
     }
 
     private static class InsertThreadSafe implements Runnable {

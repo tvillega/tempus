@@ -95,6 +95,12 @@ public class HomeViewModel extends AndroidViewModel {
         artistSyncViewModel = new StarredArtistsSyncViewModel(application);
 
         setOfflineFavorite();
+
+        playlistRepository.getPlaylistUpdateTrigger().observeForever(needsRefresh -> {
+            if (needsRefresh != null && needsRefresh) {
+                playlistRepository.updatePinnedPlaylists();
+            }
+        });
     }
 
     public LiveData<List<Child>> getDiscoverSongSample(LifecycleOwner owner) {
@@ -371,6 +377,10 @@ public class HomeViewModel extends AndroidViewModel {
 
     public void refreshTopPlayedSongs(LifecycleOwner owner) {
         songRepository.getTopPlayedSongs(20).observe(owner, topPlayedSongs::postValue);
+    }
+
+    public void refreshPinnedPlaylists() {
+        playlistRepository.updatePinnedPlaylists();
     }
 
     public void refreshShares(LifecycleOwner owner) {

@@ -138,6 +138,7 @@ public class PlaylistChooserViewModel extends AndroidViewModel {
             if (message.length() > 0) {
                 android.widget.Toast.makeText(getApplication(), message.toString(), android.widget.Toast.LENGTH_LONG).show();
             }
+            playlistRepository.updatePinnedPlaylists();
             dialog.dismiss();
         }
     }
