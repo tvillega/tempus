@@ -175,6 +175,29 @@ public class PlaylistRepository {
         addSongToPlaylist(playlistId, songsId, playlistVisibilityIsPublic, null);
     }
 
+    public void removeSongFromPlaylist(String playlistId, int index, AddToPlaylistCallback callback) {
+        ArrayList<Integer> indexes = new ArrayList<>();
+        indexes.add(index);
+        App.getSubsonicClientInstance(false)
+                .getPlaylistClient()
+                .updatePlaylist(playlistId, null, true, null, indexes)
+                .enqueue(new Callback<ApiResponse>() {
+                    @Override
+                    public void onResponse(@NonNull Call<ApiResponse> call, @NonNull Response<ApiResponse> response) {
+                        if (response.isSuccessful()) notifyPlaylistChanged();
+                        if (callback != null) {
+                            if (response.isSuccessful()) callback.onSuccess();
+                            else callback.onFailure();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<ApiResponse> call, @NonNull Throwable t) {
+                        if (callback != null) callback.onFailure();
+                    }
+                });
+    }
+
     public void createPlaylist(String playlistId, String name, ArrayList<String> songsId) {
         App.getSubsonicClientInstance(false)
                 .getPlaylistClient()
