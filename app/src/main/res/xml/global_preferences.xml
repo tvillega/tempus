@@ -468,6 +468,24 @@
         </PreferenceCategory>
 
         <PreferenceCategory app:title="Account &amp; Session">
+            <PreferenceScreen
+                android:key="screen_lastfm"
+                android:title="Last.fm Account"
+                app:icon="@drawable/ic_refresh">
+                <PreferenceCategory app:title="Last.fm">
+                    <EditTextPreference
+                        android:key="last_fm_user"
+                        android:title="Username"
+                        app:useSimpleSummaryProvider="true"
+                        app:icon="@drawable/ic_placeholder_artist" />
+                    <EditTextPreference
+                        android:key="last_fm_api_key"
+                        android:title="API Key"
+                        app:useSimpleSummaryProvider="true"
+                        app:icon="@drawable/ic_link" />
+                </PreferenceCategory>
+            </PreferenceScreen>
+
             <Preference
                 android:key="logout"
                 android:title="@string/settings_logout_title"

@@ -799,4 +799,24 @@ object Preferences {
     fun setPlayNextBehavior(behavior: String) {
         App.getInstance().preferences.edit().putString(PLAY_NEXT_BEHAVIOR, behavior).apply()
     }
+
+    @JvmStatic
+    fun getLastFmUser(): String? {
+        return App.getInstance().preferences.getString(Constants.LAST_FM_USER, null)
+    }
+
+    @JvmStatic
+    fun setLastFmUser(user: String?) {
+        App.getInstance().preferences.edit().putString(Constants.LAST_FM_USER, user).apply()
+    }
+
+    @JvmStatic
+    fun getLastFmApiKey(): String? {
+        return App.getInstance().preferences.getString(Constants.LAST_FM_API_KEY, null)
+    }
+
+    @JvmStatic
+    fun setLastFmApiKey(apiKey: String?) {
+        App.getInstance().preferences.edit().putString(Constants.LAST_FM_API_KEY, apiKey).apply()
+    }
 }

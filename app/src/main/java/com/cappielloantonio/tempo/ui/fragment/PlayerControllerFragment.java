@@ -340,6 +340,24 @@ public class PlayerControllerFragment extends Fragment {
                         }
                     }
                     break;
+                case Constants.METADATA_SCROBBLES:
+                    TextView scrobbleView = createMetadataView("", R.style.TitleSmall);
+                    scrobbleView.setTextColor(UIUtil.getThemeColor(requireContext(), com.google.android.material.R.attr.colorOnSurfaceVariant));
+                    scrobbleView.setVisibility(View.GONE);
+                    playerMetadataContainer.addView(scrobbleView);
+
+                    String artist = mediaMetadata.artist != null ? String.valueOf(mediaMetadata.artist) : null;
+                    String title = mediaMetadata.title != null ? String.valueOf(mediaMetadata.title) : null;
+                    playerBottomSheetViewModel.fetchLastFmScrobbleCount(artist, title);
+                    playerBottomSheetViewModel.getLastFmScrobbleCount().observe(getViewLifecycleOwner(), count -> {
+                        if (count != null && count > 0) {
+                            scrobbleView.setText(count + " scrobbles");
+                            scrobbleView.setVisibility(View.VISIBLE);
+                        } else {
+                            scrobbleView.setVisibility(View.GONE);
+                        }
+                    });
+                    break;
             }
         }
     }

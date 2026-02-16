@@ -144,6 +144,10 @@ object Constants {
     const val METADATA_GENRE = "METADATA_GENRE"
     const val METADATA_BITRATE = "METADATA_BITRATE"
     const val METADATA_PLAY_COUNT = "METADATA_PLAY_COUNT"
+    const val METADATA_SCROBBLES = "METADATA_SCROBBLES"
+
+    const val LAST_FM_USER = "last_fm_user"
+    const val LAST_FM_API_KEY = "last_fm_api_key"
 
     const val CUSTOM_COMMAND_TOGGLE_SHUFFLE_MODE_ON = "android.media3.session.demo.SHUFFLE_ON"
     const val CUSTOM_COMMAND_TOGGLE_SHUFFLE_MODE_OFF = "android.media3.session.demo.SHUFFLE_OFF"

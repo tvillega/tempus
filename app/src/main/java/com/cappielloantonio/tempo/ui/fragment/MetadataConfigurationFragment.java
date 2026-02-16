@@ -61,7 +61,8 @@ public class MetadataConfigurationFragment extends Fragment {
                 Constants.METADATA_YEAR,
                 Constants.METADATA_GENRE,
                 Constants.METADATA_BITRATE,
-                Constants.METADATA_PLAY_COUNT
+                Constants.METADATA_PLAY_COUNT,
+                Constants.METADATA_SCROBBLES
         ));
 
         // Reorder allItems to have current items first in their saved order
@@ -159,6 +160,7 @@ public class MetadataConfigurationFragment extends Fragment {
                 case Constants.METADATA_GENRE: return "Genre";
                 case Constants.METADATA_BITRATE: return "Bitrate";
                 case Constants.METADATA_PLAY_COUNT: return "Play Count";
+                case Constants.METADATA_SCROBBLES: return "Scrobbles";
                 default: return item;
             }
         }
@@ -172,6 +174,7 @@ public class MetadataConfigurationFragment extends Fragment {
                 case Constants.METADATA_GENRE: return R.drawable.ic_eq;
                 case Constants.METADATA_BITRATE: return R.drawable.ic_graphic_eq;
                 case Constants.METADATA_PLAY_COUNT: return R.drawable.ic_repeat;
+                case Constants.METADATA_SCROBBLES: return R.drawable.ic_refresh;
                 default: return R.drawable.ic_info_stream;
             }
         }
