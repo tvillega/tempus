@@ -31,6 +31,19 @@ public class HomeRearrangementViewModel extends AndroidViewModel {
                     new TypeToken<List<HomeSector>>() {
                     }.getType()
             );
+
+            // Add missing sectors if any (e.g. after an app update)
+            List<HomeSector> standardSectors = fillStandardHomeSectorList();
+            boolean changed = false;
+            for (HomeSector standardSector : standardSectors) {
+                if (sectors.stream().noneMatch(s -> s.getId().equals(standardSector.getId()))) {
+                    sectors.add(standardSector);
+                    changed = true;
+                }
+            }
+            if (changed) {
+                Preferences.setHomeSectorList(sectors);
+            }
         } else {
             sectors = fillStandardHomeSectorList();
         }
@@ -72,6 +85,7 @@ public class HomeRearrangementViewModel extends AndroidViewModel {
         sectors.add(new HomeSector(Constants.HOME_SECTOR_RECENTLY_ADDED, getApplication().getString(R.string.home_title_recently_added), true, 13));
         sectors.add(new HomeSector(Constants.HOME_SECTOR_PINNED_PLAYLISTS, getApplication().getString(R.string.home_title_pinned_playlists), true, 14));
         sectors.add(new HomeSector(Constants.HOME_SECTOR_SHARED, getApplication().getString(R.string.home_title_shares), true, 15));
+        sectors.add(new HomeSector(Constants.HOME_SECTOR_HISTORY, getApplication().getString(R.string.home_title_history), true, 16));
 
         return sectors;
     }

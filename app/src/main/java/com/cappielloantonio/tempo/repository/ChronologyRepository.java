@@ -16,6 +16,10 @@ public class ChronologyRepository {
         return chronologyDao.getAllFrom(start, end, server);
     }
 
+    public LiveData<List<Chronology>> getLastPlayed(String server, int count) {
+        return chronologyDao.getLastPlayed(server, count);
+    }
+
     public void insert(Chronology item) {
         InsertThreadSafe insert = new InsertThreadSafe(chronologyDao, item);
         Thread thread = new Thread(insert);

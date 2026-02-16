@@ -89,6 +89,7 @@ public class HomeTabMusicFragment extends Fragment implements ClickCallback {
     private ArtistAdapter bestOfArtistAdapter;
     private SongHorizontalAdapter starredSongAdapter;
     private SongHorizontalAdapter topSongAdapter;
+    private SongHorizontalAdapter historyAdapter;
     private AlbumHorizontalAdapter starredAlbumAdapter;
     private ArtistHorizontalAdapter starredArtistAdapter;
     private AlbumAdapter recentlyAddedAlbumAdapter;
@@ -136,11 +137,51 @@ public class HomeTabMusicFragment extends Fragment implements ClickCallback {
         initYearSongView();
         initRecentAddedAlbumView();
         initTopSongsView();
+        initHistoryView();
         initPinnedPlaylistsView();
         initSharesView();
         initHomeReorganizer();
 
         reorder();
+    }
+
+    private void initHistoryView() {
+        if (homeViewModel.checkHomeSectorVisibility(Constants.HOME_SECTOR_HISTORY)) return;
+
+        bind.historyRecyclerView.setHasFixedSize(true);
+
+        historyAdapter = new SongHorizontalAdapter(getViewLifecycleOwner(), this, true, false, null);
+        bind.historyRecyclerView.setAdapter(historyAdapter);
+        setHistoryMediaBrowserListenableFuture();
+        reapplyHistoryPlayback();
+        homeViewModel.getHistory(getViewLifecycleOwner()).observe(getViewLifecycleOwner(), chronologies -> {
+            if (chronologies == null || chronologies.isEmpty()) {
+                if (bind != null) bind.historySector.setVisibility(View.GONE);
+            } else {
+                if (bind != null) bind.historySector.setVisibility(View.VISIBLE);
+                if (bind != null)
+                    bind.historyRecyclerView.setLayoutManager(new GridLayoutManager(requireContext(), UIUtil.getSpanCount(chronologies.size(), 5), GridLayoutManager.HORIZONTAL, false));
+
+                List<Child> historySongs = chronologies.stream()
+                        .map(cronologia -> (Child) cronologia)
+                        .collect(Collectors.toList());
+
+                historyAdapter.setItems(historySongs);
+                reapplyHistoryPlayback();
+            }
+        });
+
+        SnapHelper historySnapHelper = new PagerSnapHelper();
+        historySnapHelper.attachToRecyclerView(bind.historyRecyclerView);
+
+        bind.historyRecyclerView.addItemDecoration(
+                new DotsIndicatorDecoration(
+                        getResources().getDimensionPixelSize(R.dimen.radius),
+                        getResources().getDimensionPixelSize(R.dimen.radius) * 4,
+                        getResources().getDimensionPixelSize(R.dimen.dots_height),
+                        requireContext().getResources().getColor(R.color.titleTextColor, null),
+                        requireContext().getResources().getColor(R.color.titleTextColor, null))
+        );
     }
 
     @Override
@@ -152,6 +193,7 @@ public class HomeTabMusicFragment extends Fragment implements ClickCallback {
         MediaManager.registerPlaybackObserver(mediaBrowserListenableFuture, playbackViewModel);
         observeStarredSongsPlayback();
         observeTopSongsPlayback();
+        observeHistoryPlayback();
     }
 
     @Override
@@ -160,6 +202,7 @@ public class HomeTabMusicFragment extends Fragment implements ClickCallback {
         refreshSharesView();
         if (topSongAdapter != null) setTopSongsMediaBrowserListenableFuture();
         if (starredSongAdapter != null) setStarredSongsMediaBrowserListenableFuture();
+        if (historyAdapter != null) setHistoryMediaBrowserListenableFuture();
     }
 
     @Override
@@ -276,6 +319,17 @@ public class HomeTabMusicFragment extends Fragment implements ClickCallback {
         bind.recentlyAddedAlbumsTextViewRefreshable.setOnLongClickListener(v -> {
             homeViewModel.refreshMostRecentlyAddedAlbums(getViewLifecycleOwner());
             return true;
+        });
+
+        bind.historyTextViewRefreshable.setOnLongClickListener(v -> {
+            homeViewModel.refreshHistory(getViewLifecycleOwner());
+            return true;
+        });
+
+        bind.historyTextViewClickable.setOnClickListener(v -> {
+            Bundle bundle = new Bundle();
+            bundle.putString(Constants.MEDIA_RECENTLY_PLAYED, Constants.MEDIA_RECENTLY_PLAYED);
+            activity.navController.navigate(R.id.action_homeFragment_to_songListPageFragment, bundle);
         });
 
         bind.sharesTextViewRefreshable.setOnLongClickListener(v -> {
@@ -1204,6 +1258,9 @@ public class HomeTabMusicFragment extends Fragment implements ClickCallback {
                     case Constants.HOME_SECTOR_SHARED:
                         bind.homeLinearLayoutContainer.addView(bind.sharesSector);
                         break;
+                    case Constants.HOME_SECTOR_HISTORY:
+                        bind.homeLinearLayoutContainer.addView(bind.historySector);
+                        break;
                 }
             }
 
@@ -1405,6 +1462,21 @@ public class HomeTabMusicFragment extends Fragment implements ClickCallback {
         });
     }
 
+    private void observeHistoryPlayback() {
+        playbackViewModel.getCurrentSongId().observe(getViewLifecycleOwner(), id -> {
+            if (historyAdapter != null) {
+                Boolean playing = playbackViewModel.getIsPlaying().getValue();
+                historyAdapter.setPlaybackState(id, playing != null && playing);
+            }
+        });
+        playbackViewModel.getIsPlaying().observe(getViewLifecycleOwner(), playing -> {
+            if (historyAdapter != null) {
+                String id = playbackViewModel.getCurrentSongId().getValue();
+                historyAdapter.setPlaybackState(id, playing != null && playing);
+            }
+        });
+    }
+
     private void reapplyStarredSongsPlayback() {
         if (starredSongAdapter != null) {
             String id = playbackViewModel.getCurrentSongId().getValue();
@@ -1421,11 +1493,25 @@ public class HomeTabMusicFragment extends Fragment implements ClickCallback {
         }
     }
 
+    private void reapplyHistoryPlayback() {
+        if (historyAdapter != null) {
+            String id = playbackViewModel.getCurrentSongId().getValue();
+            Boolean playing = playbackViewModel.getIsPlaying().getValue();
+            historyAdapter.setPlaybackState(id, playing != null && playing);
+        }
+    }
+
     private void setTopSongsMediaBrowserListenableFuture() {
         topSongAdapter.setMediaBrowserListenableFuture(mediaBrowserListenableFuture);
     }
 
     private void setStarredSongsMediaBrowserListenableFuture() {
         starredSongAdapter.setMediaBrowserListenableFuture(mediaBrowserListenableFuture);
+    }
+
+    private void setHistoryMediaBrowserListenableFuture() {
+        if (historyAdapter != null) {
+            historyAdapter.setMediaBrowserListenableFuture(mediaBrowserListenableFuture);
+        }
     }
 }
