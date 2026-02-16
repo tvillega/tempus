@@ -11,12 +11,15 @@ import com.cappielloantonio.tempo.subsonic.models.Child;
 import com.cappielloantonio.tempo.subsonic.models.SubsonicResponse;
 import com.cappielloantonio.tempo.util.Constants.SeedType;
 
+import com.cappielloantonio.tempo.subsonic.api.navidrome.NavidromeClient;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.Executors;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -293,6 +296,36 @@ public class SongRepository {
             @Override public void onFailure(@NonNull Call<ApiResponse> call, @NonNull Throwable t) {}
         });
         return randomSongsSample;
+    }
+
+    public MutableLiveData<List<Child>> getRecentlyPlayedSongs(int count) {
+        MutableLiveData<List<Child>> recentlyPlayedSongs = new MutableLiveData<>();
+        Executors.newSingleThreadExecutor().execute(() -> {
+            try {
+                List<Child> songs = NavidromeClient.getInstance().getRecentlyPlayedSongs(count);
+                Log.d(TAG, "getRecentlyPlayedSongs: returning " + songs.size() + " songs");
+                recentlyPlayedSongs.postValue(songs);
+            } catch (Exception e) {
+                Log.e(TAG, "getRecentlyPlayedSongs: exception", e);
+                recentlyPlayedSongs.postValue(null);
+            }
+        });
+        return recentlyPlayedSongs;
+    }
+
+    public MutableLiveData<List<Child>> getTopPlayedSongs(int count) {
+        MutableLiveData<List<Child>> topPlayedSongs = new MutableLiveData<>();
+        Executors.newSingleThreadExecutor().execute(() -> {
+            try {
+                List<Child> songs = NavidromeClient.getInstance().getTopPlayedSongs(count);
+                Log.d(TAG, "getTopPlayedSongs: returning " + songs.size() + " songs");
+                topPlayedSongs.postValue(songs);
+            } catch (Exception e) {
+                Log.e(TAG, "getTopPlayedSongs: exception", e);
+                topPlayedSongs.postValue(null);
+            }
+        });
+        return topPlayedSongs;
     }
 
     public MutableLiveData<List<Child>> getRandomSampleWithGenre(int number, Integer fromYear, Integer toYear, String genre) {

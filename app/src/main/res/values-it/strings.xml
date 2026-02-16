@@ -37,6 +37,8 @@
     <string name="artist_error_retrieving_radio">Errore nel recupero della radio dell\'artista</string>
     <string name="artist_error_retrieving_tracks">Errore nel recupero dei brani dell\'artista</string>
     <string name="artist_list_page_downloaded">Artisti scaricati</string>
+    <string name="artist_list_page_recently_played">Artisti ascoltati di recente</string>
+    <string name="artist_list_page_top_played">Artisti più ascoltati</string>
     <string name="artist_list_page_starred">Artisti preferiti</string>
     <string name="artist_list_page_title">Artisti</string>
     <string name="artist_page_radio_button">Radio</string>
@@ -137,6 +139,14 @@
     <string name="home_title_discovery">Scopri</string>
     <string name="home_title_discovery_shuffle_all_button">Mescola tutto</string>
     <string name="home_title_flashback">Flashback</string>
+    <string name="home_title_history">Cronologia</string>
+    <string name="home_title_history_see_all_button">Vedi tutto</string>
+    <string name="home_title_recently_played_artists">Artisti ascoltati di recente</string>
+    <string name="home_title_recently_played_artists_see_all_button">Vedi tutto</string>
+    <string name="home_title_top_played_artists">Artisti più ascoltati</string>
+    <string name="home_title_top_played_artists_see_all_button">Vedi tutto</string>
+    <string name="home_title_top_played_songs">Brani più ascoltati</string>
+    <string name="home_title_top_played_songs_see_all_button">Vedi tutto</string>
     <string name="home_title_internet_radio_station">Stazioni internet-radio</string>
     <string name="home_title_last_played">Ultimi ascolti</string>
     <string name="home_title_last_played_see_all_button">Vedi tutto</string>
@@ -450,6 +460,7 @@
     <string name="song_bottom_sheet_rate">Valuta</string>
     <string name="song_bottom_sheet_remove">Rimuovi</string>
     <string name="song_bottom_sheet_share">Condividi</string>
+    <string name="song_list_page_top_played">Brani più ascoltati</string>
     <string name="song_list_page_downloaded">Scaricato</string>
     <string name="song_list_page_most_played">Tracce più riprodotte</string>
     <string name="song_list_page_recently_added">Tracce aggiunte di recente</string>

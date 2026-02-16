@@ -9,6 +9,8 @@ import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.cappielloantonio.tempo.repository.AlbumRepository;
+import com.cappielloantonio.tempo.repository.ChronologyRepository;
 import com.cappielloantonio.tempo.repository.ArtistRepository;
 import com.cappielloantonio.tempo.repository.SongRepository;
 import com.cappielloantonio.tempo.subsonic.models.AlbumID3;
@@ -16,13 +18,17 @@ import com.cappielloantonio.tempo.subsonic.models.ArtistID3;
 import com.cappielloantonio.tempo.subsonic.models.Child;
 import com.cappielloantonio.tempo.subsonic.models.Genre;
 import com.cappielloantonio.tempo.util.Constants;
+import com.cappielloantonio.tempo.util.Preferences;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class SongListPageViewModel extends AndroidViewModel {
     private final SongRepository songRepository;
     private final ArtistRepository artistRepository;
+    private final AlbumRepository albumRepository;
+    private final ChronologyRepository chronologyRepository;
 
     public String title;
     public String toolbarTitle;
@@ -44,6 +50,8 @@ public class SongListPageViewModel extends AndroidViewModel {
 
         songRepository = new SongRepository();
         artistRepository = new ArtistRepository();
+        albumRepository = new AlbumRepository();
+        chronologyRepository = new ChronologyRepository();
     }
 
     public LiveData<List<Child>> getSongList() {
@@ -64,6 +72,12 @@ public class SongListPageViewModel extends AndroidViewModel {
                 break;
             case Constants.MEDIA_STARRED:
                 songList = songRepository.getStarredSongs(false, -1);
+                break;
+            case Constants.MEDIA_RECENTLY_PLAYED:
+                songList = songRepository.getRecentlyPlayedSongs(500);
+                break;
+            case Constants.MEDIA_TOP_PLAYED:
+                songList = songRepository.getTopPlayedSongs(500);
                 break;
         }
 
@@ -90,6 +104,8 @@ public class SongListPageViewModel extends AndroidViewModel {
             case Constants.MEDIA_BY_GENRES:
             case Constants.MEDIA_BY_YEAR:
             case Constants.MEDIA_STARRED:
+            case Constants.MEDIA_RECENTLY_PLAYED:
+            case Constants.MEDIA_TOP_PLAYED:
                 break;
         }
     }

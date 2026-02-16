@@ -86,6 +86,9 @@ public class HomeRearrangementViewModel extends AndroidViewModel {
         sectors.add(new HomeSector(Constants.HOME_SECTOR_PINNED_PLAYLISTS, getApplication().getString(R.string.home_title_pinned_playlists), true, 14));
         sectors.add(new HomeSector(Constants.HOME_SECTOR_SHARED, getApplication().getString(R.string.home_title_shares), true, 15));
         sectors.add(new HomeSector(Constants.HOME_SECTOR_HISTORY, getApplication().getString(R.string.home_title_history), true, 16));
+        sectors.add(new HomeSector(Constants.HOME_SECTOR_RECENTLY_PLAYED_ARTISTS, getApplication().getString(R.string.home_title_recently_played_artists), true, 17));
+        sectors.add(new HomeSector(Constants.HOME_SECTOR_TOP_PLAYED_ARTISTS, getApplication().getString(R.string.home_title_top_played_artists), true, 18));
+        sectors.add(new HomeSector(Constants.HOME_SECTOR_TOP_PLAYED_SONGS, getApplication().getString(R.string.home_title_top_played_songs), true, 19));
 
         return sectors;
     }

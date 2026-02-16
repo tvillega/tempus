@@ -66,10 +66,13 @@ public class HomeViewModel extends AndroidViewModel {
     private final MutableLiveData<List<AlbumID3>> recentlyAddedAlbumSample = new MutableLiveData<>(null);
 
     private final MutableLiveData<List<Chronology>> thisGridTopSong = new MutableLiveData<>(null);
-    private final MutableLiveData<List<Chronology>> history = new MutableLiveData<>(null);
+    private final MutableLiveData<List<Child>> history = new MutableLiveData<>(null);
     private final MutableLiveData<List<Child>> mediaInstantMix = new MutableLiveData<>(null);
     private final MutableLiveData<List<Child>> artistInstantMix = new MutableLiveData<>(null);
     private final MutableLiveData<List<Child>> artistBestOf = new MutableLiveData<>(null);
+    private final MutableLiveData<List<ArtistID3>> recentlyPlayedArtists = new MutableLiveData<>(null);
+    private final MutableLiveData<List<ArtistID3>> topPlayedArtists = new MutableLiveData<>(null);
+    private final MutableLiveData<List<Child>> topPlayedSongs = new MutableLiveData<>(null);
     private final MutableLiveData<List<Playlist>> pinnedPlaylists = new MutableLiveData<>(null);
     private final MutableLiveData<List<Share>> shares = new MutableLiveData<>(null);
 
@@ -120,10 +123,30 @@ public class HomeViewModel extends AndroidViewModel {
         return thisGridTopSong;
     }
 
-    public LiveData<List<Chronology>> getHistory(LifecycleOwner owner) {
-        String server = Preferences.getServerId();
-        chronologyRepository.getLastPlayed(server, 20).observe(owner, history::postValue);
+    public LiveData<List<Child>> getHistory(LifecycleOwner owner) {
+        songRepository.getRecentlyPlayedSongs(20).observe(owner, history::postValue);
         return history;
+    }
+
+    public LiveData<List<ArtistID3>> getRecentlyPlayedArtists(LifecycleOwner owner) {
+        if (recentlyPlayedArtists.getValue() == null) {
+            artistRepository.getRecentlyPlayedArtists(20).observe(owner, recentlyPlayedArtists::postValue);
+        }
+        return recentlyPlayedArtists;
+    }
+
+    public LiveData<List<ArtistID3>> getTopPlayedArtists(LifecycleOwner owner) {
+        if (topPlayedArtists.getValue() == null) {
+            artistRepository.getTopPlayedArtists(20).observe(owner, topPlayedArtists::postValue);
+        }
+        return topPlayedArtists;
+    }
+
+    public LiveData<List<Child>> getTopPlayedSongs(LifecycleOwner owner) {
+        if (topPlayedSongs.getValue() == null) {
+            songRepository.getTopPlayedSongs(20).observe(owner, topPlayedSongs::postValue);
+        }
+        return topPlayedSongs;
     }
 
     public LiveData<List<AlbumID3>> getRecentlyReleasedAlbums(LifecycleOwner owner) {
@@ -356,12 +379,27 @@ public class HomeViewModel extends AndroidViewModel {
     }
 
     public void refreshHistory(LifecycleOwner owner) {
-        String server = Preferences.getServerId();
-        chronologyRepository.getLastPlayed(server, 20).observe(owner, history::postValue);
+        songRepository.getRecentlyPlayedSongs(20).observe(owner, history::postValue);
+    }
+
+    public void refreshRecentlyPlayedArtists(LifecycleOwner owner) {
+        artistRepository.getRecentlyPlayedArtists(20).observe(owner, recentlyPlayedArtists::postValue);
+    }
+
+    public void refreshTopPlayedArtists(LifecycleOwner owner) {
+        artistRepository.getTopPlayedArtists(20).observe(owner, topPlayedArtists::postValue);
+    }
+
+    public void refreshTopPlayedSongs(LifecycleOwner owner) {
+        songRepository.getTopPlayedSongs(20).observe(owner, topPlayedSongs::postValue);
     }
 
     public void refreshShares(LifecycleOwner owner) {
         sharingRepository.getShares().observe(owner, this.shares::postValue);
+    }
+
+    public void refreshHomeSectorList() {
+        setHomeSectorList();
     }
 
     private void setHomeSectorList() {
@@ -384,6 +422,8 @@ public class HomeViewModel extends AndroidViewModel {
             if (changed) {
                 Preferences.setHomeSectorList(sectors);
             }
+        } else {
+            sectors = fillStandardHomeSectorList();
         }
     }
 
@@ -406,6 +446,9 @@ public class HomeViewModel extends AndroidViewModel {
         sectors.add(new HomeSector(Constants.HOME_SECTOR_PINNED_PLAYLISTS, getApplication().getString(R.string.home_title_pinned_playlists), true, 14));
         sectors.add(new HomeSector(Constants.HOME_SECTOR_SHARED, getApplication().getString(R.string.home_title_shares), true, 15));
         sectors.add(new HomeSector(Constants.HOME_SECTOR_HISTORY, getApplication().getString(R.string.home_title_history), true, 16));
+        sectors.add(new HomeSector(Constants.HOME_SECTOR_RECENTLY_PLAYED_ARTISTS, getApplication().getString(R.string.home_title_recently_played_artists), true, 17));
+        sectors.add(new HomeSector(Constants.HOME_SECTOR_TOP_PLAYED_ARTISTS, getApplication().getString(R.string.home_title_top_played_artists), true, 18));
+        sectors.add(new HomeSector(Constants.HOME_SECTOR_TOP_PLAYED_SONGS, getApplication().getString(R.string.home_title_top_played_songs), true, 19));
 
         return sectors;
     }
@@ -415,9 +458,12 @@ public class HomeViewModel extends AndroidViewModel {
     }
 
     public boolean checkHomeSectorVisibility(String sectorId) {
-        return sectors != null && sectors.stream().filter(sector -> sector.getId().equals(sectorId))
+        if (sectors == null) return true;
+        HomeSector sector = sectors.stream()
+                .filter(s -> s.getId().equals(sectorId))
                 .findAny()
-                .orElse(null) == null;
+                .orElse(null);
+        return sector == null || !sector.isVisible();
     }
 
     public void setOfflineFavorite() {

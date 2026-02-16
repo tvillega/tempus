@@ -6,7 +6,8 @@
     android:layout_width="match_parent"
     android:layout_height="42dp"
     android:background="@drawable/bg_mini_player_pill"
-    android:clipChildren="false"
+    android:clipChildren="true"
+    android:clipToOutline="true"
     android:elevation="4dp"
     android:minWidth="380dp">
 

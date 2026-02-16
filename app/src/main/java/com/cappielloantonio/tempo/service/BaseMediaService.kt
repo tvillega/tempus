@@ -168,6 +168,9 @@ open class BaseMediaService : MediaLibraryService() {
 
                 if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_SEEK || reason == Player.MEDIA_ITEM_TRANSITION_REASON_AUTO) {
                     MediaManager.setLastPlayedTimestamp(mediaItem)
+                    if (mediaItem.mediaMetadata.extras?.getString("type") == Constants.MEDIA_TYPE_MUSIC) {
+                        MediaManager.saveChronology(mediaItem)
+                    }
                 }
                 
                 // Restart header checks for radio streams when media item changes

@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.cappielloantonio.tempo.R;
 import com.cappielloantonio.tempo.databinding.DialogHomeRearrangementBinding;
+import com.cappielloantonio.tempo.interfaces.HomeRearrangementCallback;
 import com.cappielloantonio.tempo.ui.adapter.HomeSectorHorizontalAdapter;
 import com.cappielloantonio.tempo.viewmodel.HomeRearrangementViewModel;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -22,6 +23,14 @@ public class HomeRearrangementDialog extends DialogFragment {
     private DialogHomeRearrangementBinding bind;
     private HomeRearrangementViewModel homeRearrangementViewModel;
     private HomeSectorHorizontalAdapter homeSectorHorizontalAdapter;
+    private HomeRearrangementCallback callback;
+
+    public HomeRearrangementDialog() {
+    }
+
+    public HomeRearrangementDialog(HomeRearrangementCallback callback) {
+        this.callback = callback;
+    }
 
     @NonNull
     @Override
@@ -59,11 +68,13 @@ public class HomeRearrangementDialog extends DialogFragment {
 
         alertDialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
             homeRearrangementViewModel.saveHomeSectorList(homeSectorHorizontalAdapter.getItems());
+            if (callback != null) callback.onChanged();
             dismiss();
         });
 
         alertDialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_NEUTRAL).setOnClickListener(v -> {
             homeRearrangementViewModel.resetHomeSectorList();
+            if (callback != null) callback.onChanged();
             dismiss();
         });
     }

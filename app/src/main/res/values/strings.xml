@@ -37,6 +37,8 @@
     <string name="artist_error_retrieving_radio">Error retrieving artist\'s radio</string>
     <string name="artist_error_retrieving_tracks">Error retrieving artist\'s tracks</string>
     <string name="artist_list_page_downloaded">Downloaded artists</string>
+    <string name="artist_list_page_recently_played">Recently played artists</string>
+    <string name="artist_list_page_top_played">Top played artists</string>
     <string name="artist_list_page_starred">Starred artists</string>
     <string name="artist_list_page_title">Artists</string>
     <string name="artist_no_artist_info_toast">No additional artist info</string>
@@ -149,6 +151,12 @@
     <string name="home_title_flashback">Flashback</string>
     <string name="home_title_history">History</string>
     <string name="home_title_history_see_all_button">See all</string>
+    <string name="home_title_recently_played_artists">Recently played artists</string>
+    <string name="home_title_recently_played_artists_see_all_button">See all</string>
+    <string name="home_title_top_played_artists">Top played artists</string>
+    <string name="home_title_top_played_artists_see_all_button">See all</string>
+    <string name="home_title_top_played_songs">Top played songs</string>
+    <string name="home_title_top_played_songs_see_all_button">See all</string>
     <string name="home_title_internet_radio_station">Internet radio stations</string>
     <string name="home_title_last_played">Last played</string>
     <string name="home_title_last_played_see_all_button">See all</string>
@@ -485,6 +493,7 @@
     <string name="song_bottom_sheet_rate">Rate</string>
     <string name="song_bottom_sheet_remove">Remove</string>
     <string name="song_bottom_sheet_share">Share</string>
+    <string name="song_list_page_top_played">Top played songs</string>
     <string name="song_list_page_downloaded">Downloaded</string>
     <string name="song_list_page_most_played">Most played tracks</string>
     <string name="song_list_page_recently_added">Recently added tracks</string>
