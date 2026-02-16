@@ -239,6 +239,9 @@
     <string name="playlist_chooser_dialog_toast_add_success">Aggiunta di un brano alla playlist</string>
     <string name="playlist_chooser_dialog_toast_add_failure">Impossibile aggiungere un brano alla playlist</string>
     <string name="playlist_chooser_dialog_toast_all_skipped">Tutte le canzoni sono state saltate perché duplicate</string>
+    <string name="playlist_chooser_dialog_toast_added_to">Aggiunto a: %1$s</string>
+    <string name="playlist_chooser_dialog_toast_skipped_from">Saltato da: %1$s</string>
+    <string name="playlist_chooser_dialog_toast_failed_for">Fallito per: %1$s</string>
     <string name="playlist_chooser_dialog_visibility_public">Pubblico</string>
     <string name="playlist_chooser_dialog_visibility_private">Privato</string>
     <string name="playlist_counted_tracks">%1$d brani • %2$s</string>
@@ -550,4 +553,5 @@
     <string name="settings_artist_sort_by_album_count_summary">Se abilitato, ordina gli artisti per numero di album. Ordina per nome se disabilitato.</string>
     <string name="menu_edit">Modifica</string>
     <string name="menu_delete">Elimina</string>
+    <string name="dialog_button_confirm">Conferma</string>
 </resources>

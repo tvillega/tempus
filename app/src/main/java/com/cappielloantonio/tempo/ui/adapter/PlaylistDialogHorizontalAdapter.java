@@ -23,6 +23,7 @@ public class PlaylistDialogHorizontalAdapter extends RecyclerView.Adapter<Playli
 
     private List<Playlist> playlists;
     private List<Playlist> allPlaylists;
+    private final java.util.Set<String> selectedIds = new java.util.HashSet<>();
 
     public PlaylistDialogHorizontalAdapter(ClickCallback click) {
         this.click = click;
@@ -43,11 +44,25 @@ public class PlaylistDialogHorizontalAdapter extends RecyclerView.Adapter<Playli
 
         holder.item.playlistDialogTitleTextView.setText(playlist.getName());
         holder.item.playlistDialogCountTextView.setText(holder.itemView.getContext().getString(R.string.playlist_counted_tracks, playlist.getSongCount(), MusicUtil.getReadableDurationString(playlist.getDuration(), false)));
+
+        holder.item.playlistDialogCheckbox.setOnCheckedChangeListener(null);
+        holder.item.playlistDialogCheckbox.setChecked(selectedIds.contains(playlist.getId()));
+        holder.item.playlistDialogCheckbox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                selectedIds.add(playlist.getId());
+            } else {
+                selectedIds.remove(playlist.getId());
+            }
+        });
     }
 
     @Override
     public int getItemCount() {
         return playlists.size();
+    }
+
+    public List<String> getSelectedIds() {
+        return new ArrayList<>(selectedIds);
     }
 
     public void setItems(List<Playlist> playlists) {
@@ -85,14 +100,9 @@ public class PlaylistDialogHorizontalAdapter extends RecyclerView.Adapter<Playli
 
             item.playlistDialogTitleTextView.setSelected(true);
 
-            itemView.setOnClickListener(v -> onClick());
-        }
-
-        public void onClick() {
-            Bundle bundle = new Bundle();
-            bundle.putParcelable(Constants.PLAYLIST_OBJECT, playlists.get(getBindingAdapterPosition()));
-
-            click.onPlaylistClick(bundle);
+            itemView.setOnClickListener(v -> {
+                item.playlistDialogCheckbox.toggle();
+            });
         }
     }
 }

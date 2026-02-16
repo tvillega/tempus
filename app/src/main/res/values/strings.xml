@@ -253,6 +253,9 @@
     <string name="playlist_chooser_dialog_toast_add_success">Added song(s) to playlist</string>
     <string name="playlist_chooser_dialog_toast_add_failure">Failed to add song(s) to playlist</string>
     <string name="playlist_chooser_dialog_toast_all_skipped">All songs were skipped as duplicates</string>
+    <string name="playlist_chooser_dialog_toast_added_to">Added to: %1$s</string>
+    <string name="playlist_chooser_dialog_toast_skipped_from">Skipped from: %1$s</string>
+    <string name="playlist_chooser_dialog_toast_failed_for">Failed for: %1$s</string>
     <string name="playlist_chooser_dialog_visibility_public">Public</string>
     <string name="playlist_chooser_dialog_visibility_private">Private</string>
     <string name="playlist_chooser_dialog_visibility_switch_label">Mark the playlist as public</string>
@@ -591,4 +594,5 @@
     <string name="search_sort_summary">If enabled, sort searches chronologically. Sort by name if disabled.</string>
     <string name="menu_edit">Edit</string>
     <string name="menu_delete">Delete</string>
+    <string name="dialog_button_confirm">Confirm</string>
 </resources>

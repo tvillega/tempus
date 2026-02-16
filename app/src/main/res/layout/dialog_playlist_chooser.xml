@@ -72,7 +72,7 @@
         android:gravity="bottom|center_horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:weightSum="2"
+        android:weightSum="3"
         android:layout_marginTop="16dp">
 
         <Button
@@ -83,6 +83,14 @@
             android:layout_weight="1"
             android:layout_gravity="start"
             android:text="@string/playlist_chooser_dialog_create_button" />
+
+        <Button
+            android:id="@+id/playlist_chooser_dialog_confirm_button"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/dialog_button_confirm" />
 
         <Button
             android:id="@+id/playlist_chooser_dialog_cancel_button"

@@ -104,9 +104,16 @@ public class PlaylistRepository {
         return playlistLiveData;
     }
 
-    public void addSongToPlaylist(String playlistId, ArrayList<String> songsId, Boolean playlistVisibilityIsPublic) {
+    public interface AddToPlaylistCallback {
+        void onSuccess();
+        void onFailure();
+        void onAllSkipped();
+    }
+
+    public void addSongToPlaylist(String playlistId, ArrayList<String> songsId, Boolean playlistVisibilityIsPublic, AddToPlaylistCallback callback) {
+        android.util.Log.d("PlaylistRepository", "addSongToPlaylist: id=" + playlistId + ", songs=" + songsId);
         if (songsId.isEmpty()) {
-            Toast.makeText(App.getContext(), App.getContext().getString(R.string.playlist_chooser_dialog_toast_all_skipped), Toast.LENGTH_SHORT).show();
+            if (callback != null) callback.onAllSkipped();
         } else{
             App.getSubsonicClientInstance(false)
                     .getPlaylistClient()
@@ -114,15 +121,19 @@ public class PlaylistRepository {
                     .enqueue(new Callback<ApiResponse>() {
                         @Override
                         public void onResponse(@NonNull Call<ApiResponse> call, @NonNull Response<ApiResponse> response) {
-                            Toast.makeText(App.getContext(), App.getContext().getString(R.string.playlist_chooser_dialog_toast_add_success), Toast.LENGTH_SHORT).show();
+                            if (callback != null) callback.onSuccess();
                         }
 
                         @Override
                         public void onFailure(@NonNull Call<ApiResponse> call, @NonNull Throwable t) {
-                            Toast.makeText(App.getContext(), App.getContext().getString(R.string.playlist_chooser_dialog_toast_add_failure), Toast.LENGTH_SHORT).show();
+                            if (callback != null) callback.onFailure();
                         }
                     });
         }
+    }
+
+    public void addSongToPlaylist(String playlistId, ArrayList<String> songsId, Boolean playlistVisibilityIsPublic) {
+        addSongToPlaylist(playlistId, songsId, playlistVisibilityIsPublic, null);
     }
 
     public void createPlaylist(String playlistId, String name, ArrayList<String> songsId) {
