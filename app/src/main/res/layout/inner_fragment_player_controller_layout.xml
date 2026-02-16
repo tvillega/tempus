@@ -82,39 +82,18 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.42" />
 
-    <TextView
-        android:id="@+id/player_media_title_label"
-        style="@style/HeadlineLarge"
+    <LinearLayout
+        android:id="@+id/player_metadata_container"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
-        android:layout_marginTop="18dp"
+        android:layout_marginTop="43dp"
         android:layout_marginEnd="24dp"
-        android:ellipsize="marquee"
         android:gravity="center"
-        android:singleLine="true"
-        android:text="@string/label_placeholder"
+        android:orientation="vertical"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/guideline"
-        android:textColor="?attr/colorOnSurface" />
-
-    <TextView
-        android:id="@+id/player_artist_name_label"
-        style="@style/TitleMedium"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="2dp"
-        android:layout_marginEnd="24dp"
-        android:ellipsize="marquee"
-        android:gravity="center"
-        android:singleLine="true"
-        android:text="@string/label_placeholder"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/player_media_title_label"
-        android:textColor="?attr/colorOnSurfaceVariant" />
+        app:layout_constraintTop_toBottomOf="@+id/guideline" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/rating_container"
@@ -126,7 +105,7 @@
         app:layout_constraintBottom_toTopOf="@+id/exo_progress"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/player_artist_name_label"
+        app:layout_constraintTop_toBottomOf="@+id/player_metadata_container"
         app:layout_constraintVertical_chainStyle="packed">
 
         <ToggleButton
@@ -249,7 +228,7 @@
         android:id="@+id/player_play_pause_placeholder_view"
         android:layout_width="70dp"
         android:layout_height="70dp"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="25dp"
         app:layout_constraintBottom_toTopOf="@+id/player_quick_action_view"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

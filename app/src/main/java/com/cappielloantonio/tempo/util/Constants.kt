@@ -129,6 +129,14 @@ object Constants {
     const val DOCK_ITEM_SEARCH = "searchFragment"
     const val DOCK_ITEM_SETTINGS = "settingsFragment"
 
+    const val METADATA_TITLE = "METADATA_TITLE"
+    const val METADATA_ARTIST = "METADATA_ARTIST"
+    const val METADATA_ALBUM = "METADATA_ALBUM"
+    const val METADATA_YEAR = "METADATA_YEAR"
+    const val METADATA_GENRE = "METADATA_GENRE"
+    const val METADATA_BITRATE = "METADATA_BITRATE"
+    const val METADATA_PLAY_COUNT = "METADATA_PLAY_COUNT"
+
     const val CUSTOM_COMMAND_TOGGLE_SHUFFLE_MODE_ON = "android.media3.session.demo.SHUFFLE_ON"
     const val CUSTOM_COMMAND_TOGGLE_SHUFFLE_MODE_OFF = "android.media3.session.demo.SHUFFLE_OFF"
     const val CUSTOM_COMMAND_TOGGLE_HEART_ON = "android.media3.session.demo.HEART_ON"
