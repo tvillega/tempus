@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.ToggleButton;
@@ -35,6 +36,10 @@ import androidx.navigation.NavOptions;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.cappielloantonio.tempo.service.MediaManager;
+import com.cappielloantonio.tempo.subsonic.models.Child;
+import com.cappielloantonio.tempo.ui.dialog.PlaylistChooserDialog;
+
 import com.cappielloantonio.tempo.R;
 import com.cappielloantonio.tempo.databinding.InnerFragmentPlayerControllerBinding;
 import com.cappielloantonio.tempo.service.EqualizerManager;
@@ -52,12 +57,13 @@ import com.cappielloantonio.tempo.viewmodel.PlayerBottomSheetViewModel;
 import com.cappielloantonio.tempo.viewmodel.RatingViewModel;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
-import com.google.android.material.elevation.SurfaceColors;
+
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -76,11 +82,13 @@ public class PlayerControllerFragment extends Fragment {
     private ToggleButton skipSilenceToggleButton;
     private Chip playerMediaExtension;
     private TextView playerMediaBitrate;
-    private ConstraintLayout playerQuickActionView;
+    private LinearLayout playerQuickActionView;
     private ImageButton playerOpenQueueButton;
     private ImageButton playerTrackInfo;
-    private LinearLayout ratingContainer;
+    private ConstraintLayout ratingContainer;
     private ImageButton equalizerButton;
+    private ImageButton overflowMenuButton;
+    private ImageButton lyricsButton;
     private ChipGroup assetLinkChipGroup;
     private Chip playerSongLinkChip;
     private Chip playerAlbumLinkChip;
@@ -92,6 +100,7 @@ public class PlayerControllerFragment extends Fragment {
 
     private MediaService.LocalBinder mediaServiceBinder;
     private boolean isServiceBound = false;
+    private boolean isFirstBatch = true;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -110,6 +119,7 @@ public class PlayerControllerFragment extends Fragment {
         initMediaLabelButton();
         initArtistLabelButton();
         initEqualizerButton();
+        initOverflowMenu();
 
         return view;
     }
@@ -148,6 +158,8 @@ public class PlayerControllerFragment extends Fragment {
         songRatingBar =  bind.getRoot().findViewById(R.id.song_rating_bar);
         ratingContainer = bind.getRoot().findViewById(R.id.rating_container);
         equalizerButton = bind.getRoot().findViewById(R.id.player_open_equalizer_button);
+        overflowMenuButton = bind.getRoot().findViewById(R.id.button_overflow_menu);
+        lyricsButton = bind.getRoot().findViewById(R.id.player_open_lyrics_button);
         assetLinkChipGroup = bind.getRoot().findViewById(R.id.asset_link_chip_group);
         playerSongLinkChip = bind.getRoot().findViewById(R.id.asset_link_song_chip);
         playerAlbumLinkChip = bind.getRoot().findViewById(R.id.asset_link_album_chip);
@@ -156,12 +168,18 @@ public class PlayerControllerFragment extends Fragment {
     }
 
     private void initQuickActionView() {
-        playerQuickActionView.setBackgroundColor(SurfaceColors.getColorForElevation(requireContext(), 8));
-
         playerOpenQueueButton.setOnClickListener(view -> {
             PlayerBottomSheetFragment playerBottomSheetFragment = (PlayerBottomSheetFragment) requireActivity().getSupportFragmentManager().findFragmentByTag("PlayerBottomSheet");
             if (playerBottomSheetFragment != null) {
                 playerBottomSheetFragment.goToQueuePage();
+            }
+        });
+
+        lyricsButton.setOnClickListener(view -> {
+            if (playerMediaCoverViewPager.getCurrentItem() == 1) {
+                goToControllerPage();
+            } else {
+                goToLyricsPage();
             }
         });
     }
@@ -452,9 +470,8 @@ public class PlayerControllerFragment extends Fragment {
                     bind.getRoot().setShowNextButton(false);
                     bind.getRoot().setShowFastForwardButton(true);
                     bind.getRoot().setRepeatToggleModes(RepeatModeUtil.REPEAT_TOGGLE_MODE_NONE);
-                    bind.getRoot().findViewById(R.id.player_playback_speed_button).setVisibility(View.VISIBLE);
-                    bind.getRoot().findViewById(R.id.player_skip_silence_toggle_button).setVisibility(View.VISIBLE);
                     bind.getRoot().findViewById(R.id.button_favorite).setVisibility(View.GONE);
+                    bind.getRoot().findViewById(R.id.button_overflow_menu).setVisibility(View.GONE);
                     setPlaybackParameters(mediaBrowser);
                     break;
                 case Constants.MEDIA_TYPE_RADIO:
@@ -464,9 +481,8 @@ public class PlayerControllerFragment extends Fragment {
                     bind.getRoot().setShowNextButton(false);
                     bind.getRoot().setShowFastForwardButton(false);
                     bind.getRoot().setRepeatToggleModes(RepeatModeUtil.REPEAT_TOGGLE_MODE_NONE);
-                    bind.getRoot().findViewById(R.id.player_playback_speed_button).setVisibility(View.GONE);
-                    bind.getRoot().findViewById(R.id.player_skip_silence_toggle_button).setVisibility(View.GONE);
                     bind.getRoot().findViewById(R.id.button_favorite).setVisibility(View.GONE);
+                    bind.getRoot().findViewById(R.id.button_overflow_menu).setVisibility(View.GONE);
                     setPlaybackParameters(mediaBrowser);
                     break;
                 case Constants.MEDIA_TYPE_MUSIC:
@@ -477,9 +493,8 @@ public class PlayerControllerFragment extends Fragment {
                     bind.getRoot().setShowNextButton(true);
                     bind.getRoot().setShowFastForwardButton(false);
                     bind.getRoot().setRepeatToggleModes(RepeatModeUtil.REPEAT_TOGGLE_MODE_ALL | RepeatModeUtil.REPEAT_TOGGLE_MODE_ONE);
-                    bind.getRoot().findViewById(R.id.player_playback_speed_button).setVisibility(View.VISIBLE);
-                    bind.getRoot().findViewById(R.id.player_skip_silence_toggle_button).setVisibility(View.GONE);
                     bind.getRoot().findViewById(R.id.button_favorite).setVisibility(View.VISIBLE);
+                    bind.getRoot().findViewById(R.id.button_overflow_menu).setVisibility(View.VISIBLE);
                     setPlaybackParameters(mediaBrowser);
                     break;
             }
@@ -611,6 +626,74 @@ public class PlayerControllerFragment extends Fragment {
         });
     }
 
+    private void initOverflowMenu() {
+        overflowMenuButton.setOnClickListener(v -> {
+            PopupMenu popup = new PopupMenu(requireContext(), v);
+            popup.getMenuInflater().inflate(R.menu.menu_now_playing_overflow, popup.getMenu());
+            popup.setOnMenuItemClickListener(item -> {
+                int id = item.getItemId();
+                if (id == R.id.menu_add_to_playlist) {
+                    Child media = playerBottomSheetViewModel.getLiveMedia().getValue();
+                    if (media != null) {
+                        Bundle bundle = new Bundle();
+                        bundle.putParcelableArrayList(Constants.TRACKS_OBJECT, new ArrayList<>(Collections.singletonList(media)));
+                        PlaylistChooserDialog dialog = new PlaylistChooserDialog();
+                        dialog.setArguments(bundle);
+                        dialog.show(requireActivity().getSupportFragmentManager(), null);
+                    }
+                    return true;
+                } else if (id == R.id.menu_go_to_album) {
+                    playerBottomSheetViewModel.getLiveAlbum().observe(getViewLifecycleOwner(), album -> {
+                        if (album != null) {
+                            Bundle bundle = new Bundle();
+                            bundle.putParcelable(Constants.ALBUM_OBJECT, album);
+                            NavHostFragment.findNavController(this).navigate(R.id.albumPageFragment, bundle);
+                            activity.collapseBottomSheetDelayed();
+                        }
+                    });
+                    return true;
+                } else if (id == R.id.menu_go_to_artist) {
+                    playerBottomSheetViewModel.getLiveArtist().observe(getViewLifecycleOwner(), artist -> {
+                        if (artist != null) {
+                            Bundle bundle = new Bundle();
+                            bundle.putParcelable(Constants.ARTIST_OBJECT, artist);
+                            NavHostFragment.findNavController(this).navigate(R.id.artistPageFragment, bundle);
+                            activity.collapseBottomSheetDelayed();
+                        }
+                    });
+                    return true;
+                } else if (id == R.id.menu_instant_mix) {
+                    Child media = playerBottomSheetViewModel.getLiveMedia().getValue();
+                    if (media != null) {
+                        ListenableFuture<MediaBrowser> activityBrowserFuture = activity.getMediaBrowserListenableFuture();
+                        if (activityBrowserFuture == null) return true;
+
+                        isFirstBatch = true;
+                        Toast.makeText(requireContext(), R.string.bottom_sheet_generating_instant_mix, Toast.LENGTH_SHORT).show();
+
+                        playerBottomSheetViewModel.getMediaInstantMix(activity, media).observe(activity, mixMedia -> {
+                            if (mixMedia == null || mixMedia.isEmpty()) return;
+                            if (getActivity() == null) return;
+
+                            MusicUtil.ratingFilter(mixMedia);
+
+                            if (isFirstBatch) {
+                                isFirstBatch = false;
+                                MediaManager.startQueue(activityBrowserFuture, mixMedia, 0);
+                                activity.setBottomSheetInPeek(true);
+                            } else {
+                                MediaManager.enqueue(activityBrowserFuture, mixMedia, true);
+                            }
+                        });
+                    }
+                    return true;
+                }
+                return false;
+            });
+            popup.show();
+        });
+    }
+
     public void goToControllerPage() {
         playerMediaCoverViewPager.setCurrentItem(0, false);
     }
@@ -620,13 +703,17 @@ public class PlayerControllerFragment extends Fragment {
     }
 
     private void checkAndSetRatingContainerVisibility() {
-     if (ratingContainer == null) return;
+        if (ratingContainer == null) return;
 
-     if (Preferences.showItemStarRating()) {
-            ratingContainer.setVisibility(View.VISIBLE);
-         }
-     else {
-            ratingContainer.setVisibility(View.GONE);
+        if (Preferences.showItemStarRating()) {
+            songRatingBar.setVisibility(View.VISIBLE);
+        } else {
+            songRatingBar.setVisibility(View.GONE);
+        }
+
+        TextView ratingText = bind.getRoot().findViewById(R.id.rating_text);
+        if (ratingText != null) {
+            ratingText.setVisibility(Preferences.showItemStarRating() ? View.VISIBLE : View.GONE);
         }
     }
 
@@ -675,21 +762,7 @@ public class PlayerControllerFragment extends Fragment {
             short numBands = eqManager.getNumberOfBands();
 
             if (equalizerButton != null) {
-                if (numBands == 0) {
-                    equalizerButton.setVisibility(View.GONE);
-
-                    ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) playerOpenQueueButton.getLayoutParams();
-                    params.startToEnd = ConstraintLayout.LayoutParams.UNSET;
-                    params.startToStart = ConstraintLayout.LayoutParams.PARENT_ID;
-                    playerOpenQueueButton.setLayoutParams(params);
-                } else {
-                    equalizerButton.setVisibility(View.VISIBLE);
-
-                    ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) playerOpenQueueButton.getLayoutParams();
-                    params.startToStart = ConstraintLayout.LayoutParams.UNSET;
-                    params.startToEnd = R.id.player_open_equalizer_button;
-                    playerOpenQueueButton.setLayoutParams(params);
-                }
+                equalizerButton.setVisibility(numBands == 0 ? View.GONE : View.VISIBLE);
             }
         }
     }
