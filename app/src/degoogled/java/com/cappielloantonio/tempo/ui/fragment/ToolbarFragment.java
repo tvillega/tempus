@@ -38,6 +38,7 @@ public class ToolbarFragment extends Fragment {
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.main_page_menu, menu);
+        menu.findItem(R.id.action_search).setVisible(false);
     }
 
     @Override
@@ -52,11 +53,6 @@ public class ToolbarFragment extends Fragment {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.action_search) {
-            activity.navController.navigate(R.id.searchFragment);
-            return true;
-        }
-
         return false;
     }
 }

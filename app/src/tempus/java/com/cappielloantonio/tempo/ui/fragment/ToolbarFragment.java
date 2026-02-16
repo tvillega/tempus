@@ -55,11 +55,6 @@ public class ToolbarFragment extends Fragment {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.action_search) {
-            activity.navController.navigate(R.id.searchFragment);
-            return true;
-        }
-
         return false;
     }
 }
