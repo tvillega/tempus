@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.view.View;
 
@@ -17,11 +18,14 @@ public class SettingsItemDecoration extends RecyclerView.ItemDecoration {
 
     private final float cornerRadius;
     private final int margin;
+    private final int contentInset;
     private final Paint paint;
 
     public SettingsItemDecoration(Context context) {
-        cornerRadius = 24 * context.getResources().getDisplayMetrics().density;
-        margin = (int) (16 * context.getResources().getDisplayMetrics().density);
+        float density = context.getResources().getDisplayMetrics().density;
+        cornerRadius = 24 * density;
+        margin = (int) (16 * density);
+        contentInset = (int) (8 * density);
         paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint.setColor(UIUtil.getThemeColor(context, com.google.android.material.R.attr.colorSurfaceContainerLow));
     }
@@ -66,6 +70,14 @@ public class SettingsItemDecoration extends RecyclerView.ItemDecoration {
 
             path.addRoundRect(new RectF(left, top, right, bottom), radii, Path.Direction.CW);
             c.drawPath(path, paint);
+        }
+    }
+
+    @Override
+    public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
+        if (!isCategoryItem(view)) {
+            outRect.left = contentInset;
+            outRect.right = contentInset;
         }
     }
 

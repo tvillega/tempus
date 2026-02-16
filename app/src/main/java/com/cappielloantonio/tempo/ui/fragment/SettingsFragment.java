@@ -16,6 +16,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -59,6 +60,8 @@ import com.cappielloantonio.tempo.util.Preferences;
 import com.cappielloantonio.tempo.util.UIUtil;
 import com.cappielloantonio.tempo.util.ExternalAudioReader;
 import com.cappielloantonio.tempo.viewmodel.SettingViewModel;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 
 import java.util.Locale;
 import java.util.Map;
@@ -66,6 +69,15 @@ import java.util.Map;
 @OptIn(markerClass = UnstableApi.class)
 public class SettingsFragment extends PreferenceFragmentCompat implements PreferenceFragmentCompat.OnPreferenceStartScreenCallback {
     private static final String TAG = "SettingsFragment";
+
+    private static final String DEFAULT_CATEGORY = "screen_appearance";
+
+    private static final String[][] TAB_DEFINITIONS = {
+            {"screen_appearance", "settings_tab_appearance"},
+            {"screen_library", "settings_tab_library"},
+            {"screen_playback", "settings_tab_playback"},
+            {"screen_general", "settings_tab_general"},
+    };
 
     private MainActivity activity;
     private SettingViewModel settingViewModel;
@@ -75,6 +87,9 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
 
     private MediaService.LocalBinder mediaServiceBinder;
     private boolean isServiceBound = false;
+
+    private String selectedCategory = DEFAULT_CATEGORY;
+    private ChipGroup chipGroup;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -115,44 +130,116 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
                 });
     }
 
+    private boolean isRoot() {
+        return getArguments() == null || getArguments().getString(PreferenceFragmentCompat.ARG_PREFERENCE_ROOT) == null;
+    }
+
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         activity = (MainActivity) getActivity();
         settingViewModel = new ViewModelProvider(requireActivity()).get(SettingViewModel.class);
 
         View prefView = super.onCreateView(inflater, container, savedInstanceState);
-        
-        boolean isRoot = getArguments() == null || getArguments().getString(PreferenceFragmentCompat.ARG_PREFERENCE_ROOT) == null;
-        if (!isRoot) return prefView;
+
+        if (!isRoot()) return prefView;
 
         LinearLayout root = new LinearLayout(requireContext());
         root.setOrientation(LinearLayout.VERTICAL);
         root.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         root.setBackgroundColor(UIUtil.getThemeColor(requireContext(), android.R.attr.colorBackground));
-        
-        // Add title
+
         TextView title = new TextView(requireContext());
         title.setText("Settings");
         title.setTextSize(40);
         title.setTypeface(null, android.graphics.Typeface.BOLD);
-        title.setPadding(com.cappielloantonio.tempo.util.UIUtil.dpToPx(requireContext(), 24), 
-                         com.cappielloantonio.tempo.util.UIUtil.dpToPx(requireContext(), 32), 
-                         com.cappielloantonio.tempo.util.UIUtil.dpToPx(requireContext(), 24), 
-                         com.cappielloantonio.tempo.util.UIUtil.dpToPx(requireContext(), 16));
-        title.setTextColor(com.cappielloantonio.tempo.util.UIUtil.getThemeColor(requireContext(), com.google.android.material.R.attr.colorOnSurface));
-        
+        title.setPadding(UIUtil.dpToPx(requireContext(), 24),
+                         UIUtil.dpToPx(requireContext(), 32),
+                         UIUtil.dpToPx(requireContext(), 24),
+                         UIUtil.dpToPx(requireContext(), 8));
+        title.setTextColor(UIUtil.getThemeColor(requireContext(), com.google.android.material.R.attr.colorOnSurface));
         root.addView(title);
+
+        HorizontalScrollView scrollView = new HorizontalScrollView(requireContext());
+        scrollView.setHorizontalScrollBarEnabled(false);
+        scrollView.setClipToPadding(false);
+        scrollView.setPadding(UIUtil.dpToPx(requireContext(), 16), 0, UIUtil.dpToPx(requireContext(), 16), UIUtil.dpToPx(requireContext(), 8));
+
+        chipGroup = new ChipGroup(requireContext());
+        chipGroup.setSingleSelection(true);
+        chipGroup.setSelectionRequired(true);
+        chipGroup.setChipSpacingHorizontal(UIUtil.dpToPx(requireContext(), 8));
+
+        for (String[] tab : TAB_DEFINITIONS) {
+            Chip chip = new Chip(requireContext());
+            chip.setTag(tab[0]);
+
+            int stringResId = getResources().getIdentifier(tab[1], "string", requireContext().getPackageName());
+            chip.setText(getString(stringResId));
+
+            chip.setCheckable(true);
+            chip.setCheckedIconVisible(false);
+
+            chip.setChipBackgroundColor(android.content.res.ColorStateList.valueOf(
+                    UIUtil.getThemeColor(requireContext(), com.google.android.material.R.attr.colorSurfaceVariant)));
+            chip.setTextColor(UIUtil.getThemeColor(requireContext(), com.google.android.material.R.attr.colorOnSurfaceVariant));
+
+            chip.setOnClickListener(v -> {
+                String key = (String) v.getTag();
+                if (!key.equals(selectedCategory)) {
+                    switchCategory(key);
+                }
+            });
+
+            chipGroup.addView(chip);
+        }
+
+        scrollView.addView(chipGroup);
+        root.addView(scrollView);
+
         if (prefView != null) {
             root.addView(prefView);
         }
-        
+
+        selectChip(selectedCategory);
+
         return root;
+    }
+
+    private void selectChip(String categoryKey) {
+        if (chipGroup == null) return;
+        int primaryColor = UIUtil.getThemeColor(requireContext(), com.google.android.material.R.attr.colorPrimary);
+        int onPrimaryColor = UIUtil.getThemeColor(requireContext(), com.google.android.material.R.attr.colorOnPrimary);
+        int surfaceVariantColor = UIUtil.getThemeColor(requireContext(), com.google.android.material.R.attr.colorSurfaceVariant);
+        int onSurfaceVariantColor = UIUtil.getThemeColor(requireContext(), com.google.android.material.R.attr.colorOnSurfaceVariant);
+        for (int i = 0; i < chipGroup.getChildCount(); i++) {
+            Chip chip = (Chip) chipGroup.getChildAt(i);
+            boolean selected = categoryKey.equals(chip.getTag());
+            chip.setChecked(selected);
+            if (selected) {
+                chip.setChipBackgroundColor(android.content.res.ColorStateList.valueOf(primaryColor));
+                chip.setTextColor(onPrimaryColor);
+            } else {
+                chip.setChipBackgroundColor(android.content.res.ColorStateList.valueOf(surfaceVariantColor));
+                chip.setTextColor(onSurfaceVariantColor);
+            }
+        }
+    }
+
+    private void switchCategory(String rootKey) {
+        selectedCategory = rootKey;
+        setPreferencesFromResource(R.xml.global_preferences, rootKey);
+        applyCustomLayouts(getPreferenceScreen());
+        reinitializePreferences();
+        selectChip(rootKey);
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        
+
+        setDivider(null);
+        setDividerHeight(0);
+
         if (getListView() != null) {
             getListView().setPadding(0, 0, 0, (int) getResources().getDimension(R.dimen.global_padding_bottom));
             getListView().setClipToPadding(false);
@@ -163,17 +250,14 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
     }
 
     private void initAppBar(View view) {
-        // Find toolbar in activity instead of view if programmatic root is used
         androidx.appcompat.widget.Toolbar toolbar = activity.findViewById(R.id.toolbar);
-        
-        boolean isRoot = getArguments() == null || getArguments().getString(PreferenceFragmentCompat.ARG_PREFERENCE_ROOT) == null;
 
         if (toolbar != null) {
             activity.setSupportActionBar(toolbar);
             if (activity.getSupportActionBar() != null) {
-                activity.getSupportActionBar().setDisplayHomeAsUpEnabled(!isRoot);
-                activity.getSupportActionBar().setDisplayShowHomeEnabled(!isRoot);
-                activity.getSupportActionBar().setTitle(isRoot ? "" : getPreferenceScreen().getTitle());
+                activity.getSupportActionBar().setDisplayHomeAsUpEnabled(!isRoot());
+                activity.getSupportActionBar().setDisplayShowHomeEnabled(!isRoot());
+                activity.getSupportActionBar().setTitle(isRoot() ? "" : getPreferenceScreen().getTitle());
             }
 
             toolbar.setNavigationOnClickListener(v -> {
@@ -194,7 +278,12 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
     @Override
     public void onResume() {
         super.onResume();
+        reinitializePreferences();
+        bindMediaService();
+        actionAppEqualizer();
+    }
 
+    private void reinitializePreferences() {
         checkSystemEqualizer();
         checkCacheStorage();
         checkStorage();
@@ -220,8 +309,15 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
         actionConfigureDock();
         actionConfigureMetadata();
 
-        bindMediaService();
-        actionAppEqualizer();
+        ListPreference themePreference = findPreference(Preferences.THEME);
+        if (themePreference != null) {
+            themePreference.setOnPreferenceChangeListener(
+                    (preference, newValue) -> {
+                        String themeOption = (String) newValue;
+                        ThemeHelper.applyTheme(themeOption);
+                        return true;
+                    });
+        }
     }
 
     private void actionConfigureDock() {
@@ -254,19 +350,13 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-        setPreferencesFromResource(R.xml.global_preferences, rootKey);
+        if (rootKey == null) {
+            setPreferencesFromResource(R.xml.global_preferences, selectedCategory);
+        } else {
+            setPreferencesFromResource(R.xml.global_preferences, rootKey);
+        }
 
         applyCustomLayouts(getPreferenceScreen());
-
-        ListPreference themePreference = findPreference(Preferences.THEME);
-        if (themePreference != null) {
-            themePreference.setOnPreferenceChangeListener(
-                    (preference, newValue) -> {
-                        String themeOption = (String) newValue;
-                        ThemeHelper.applyTheme(themeOption);
-                        return true;
-                    });
-        }
     }
 
     private void applyCustomLayouts(androidx.preference.PreferenceGroup group) {
@@ -736,9 +826,16 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
 
     @Override
     public boolean onPreferenceStartScreen(PreferenceFragmentCompat caller, PreferenceScreen pref) {
+        String key = pref.getKey();
+        for (String[] tab : TAB_DEFINITIONS) {
+            if (tab[0].equals(key)) {
+                return false;
+            }
+        }
+
         Bundle args = new Bundle();
-        args.putString(PreferenceFragmentCompat.ARG_PREFERENCE_ROOT, pref.getKey());
-        
+        args.putString(PreferenceFragmentCompat.ARG_PREFERENCE_ROOT, key);
+
         NavController navController = NavHostFragment.findNavController(this);
         navController.navigate(R.id.settingsFragment, args);
         return true;

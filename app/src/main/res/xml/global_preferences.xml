@@ -1,11 +1,9 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <!-- UI & Appearance -->
     <PreferenceScreen
-        android:key="screen_ui"
-        android:title="@string/settings_title_ui"
-        app:icon="@drawable/ic_home">
+        android:key="screen_appearance"
+        android:title="@string/settings_tab_appearance">
 
         <PreferenceCategory app:title="@string/settings_title_ui">
             <ListPreference
@@ -80,11 +78,9 @@
 
     </PreferenceScreen>
 
-    <!-- Library & Discovery -->
     <PreferenceScreen
         android:key="screen_library"
-        android:title="@string/library_title_music_folder"
-        app:icon="@drawable/ic_folder">
+        android:title="@string/settings_tab_library">
 
         <PreferenceCategory app:title="Scan &amp; Visibility">
             <Preference
@@ -157,11 +153,9 @@
 
     </PreferenceScreen>
 
-    <!-- Audio & Playback -->
     <PreferenceScreen
-        android:key="screen_audio"
-        android:title="@string/settings_title_transcoding"
-        app:icon="@drawable/ic_graphic_eq">
+        android:key="screen_playback"
+        android:title="@string/settings_tab_playback">
 
         <PreferenceCategory app:title="Sound &amp; Effects">
             <Preference
@@ -258,13 +252,55 @@
                 app:icon="@drawable/ic_replay" />
         </PreferenceCategory>
 
+        <PreferenceCategory app:title="Behavior">
+            <SwitchPreference
+                android:title="@string/settings_show_mini_shuffle_button"
+                android:defaultValue="false"
+                android:summary="@string/settings_show_mini_shuffle_button_summary"
+                android:key="mini_shuffle_button_visibility"
+                app:icon="@drawable/ic_shuffle" />
+
+            <SwitchPreference
+                android:title="@string/settings_auto_download_lyrics"
+                android:defaultValue="false"
+                android:summary="@string/settings_auto_download_lyrics_summary"
+                android:key="auto_download_lyrics"
+                app:icon="@drawable/ic_lyrics" />
+
+            <ListPreference
+                app:defaultValue="top"
+                app:dialogTitle="@string/settings_play_next_behavior_title"
+                app:entries="@array/play_next_behavior_titles"
+                app:entryValues="@array/play_next_behavior_values"
+                app:key="play_next_behavior"
+                app:title="@string/settings_play_next_behavior_title"
+                app:summary="@string/settings_play_next_behavior_summary"
+                app:useSimpleSummaryProvider="true"
+                app:icon="@drawable/ic_navigate_next" />
+
+            <SwitchPreference
+                android:title="@string/settings_scrobble_title"
+                android:defaultValue="true"
+                android:summary="@string/settings_summary_scrobble"
+                android:key="scrobbling"
+                app:icon="@drawable/ic_refresh" />
+
+            <SeekBarPreference
+                android:key="scrobble_threshold"
+                android:title="@string/settings_scrobble_threshold_title"
+                app:showSeekBarValue="true"
+                android:defaultValue="90"
+                app:min="10"
+                android:max="100"
+                app:seekBarIncrement="5"
+                app:icon="@drawable/ic_done" />
+        </PreferenceCategory>
+
     </PreferenceScreen>
 
-    <!-- Data & Storage -->
     <PreferenceScreen
-        android:key="screen_data"
-        android:title="@string/settings_title_data"
-        app:icon="@drawable/ic_file_download">
+        android:key="screen_general"
+        android:title="@string/settings_tab_general">
 
         <PreferenceCategory app:title="Network">
             <SwitchPreference
@@ -291,6 +327,16 @@
                 app:summary="@string/settings_buffering_strategy_summary"
                 app:useSimpleSummaryProvider="false"
                 app:icon="@drawable/ic_mix_from_here" />
+
+            <EditTextPreference
+                android:key="network_ping_timeout_base"
+                android:title="@string/settings_ping_timeout_title"
+                app:summary="@string/settings_ping_timeout_summary"
+                android:dialogTitle="@string/settings_ping_timeout_dialog"
+                android:inputType="number"
+                android:singleLine="true"
+                android:defaultValue="2"
+                app:icon="@drawable/ic_refresh" />
         </PreferenceCategory>
 
         <PreferenceCategory app:title="Cache &amp; Storage">
@@ -370,68 +416,6 @@
                 app:icon="@drawable/ic_placeholder_artist" />
         </PreferenceCategory>
 
-    </PreferenceScreen>
-
-    <!-- Advanced & Interaction -->
-    <PreferenceScreen
-        android:key="screen_advanced"
-        android:title="@string/settings_title_general"
-        app:icon="@drawable/ic_settings">
-
-        <PreferenceCategory app:title="Behavior">
-            <SwitchPreference
-                android:title="@string/settings_show_mini_shuffle_button"
-                android:defaultValue="false"
-                android:summary="@string/settings_show_mini_shuffle_button_summary"
-                android:key="mini_shuffle_button_visibility"
-                app:icon="@drawable/ic_shuffle" />
-
-            <SwitchPreference
-                android:title="@string/settings_auto_download_lyrics"
-                android:defaultValue="false"
-                android:summary="@string/settings_auto_download_lyrics_summary"
-                android:key="auto_download_lyrics"
-                app:icon="@drawable/ic_lyrics" />
-
-            <ListPreference
-                app:defaultValue="top"
-                app:dialogTitle="@string/settings_play_next_behavior_title"
-                app:entries="@array/play_next_behavior_titles"
-                app:entryValues="@array/play_next_behavior_values"
-                app:key="play_next_behavior"
-                app:title="@string/settings_play_next_behavior_title"
-                app:summary="@string/settings_play_next_behavior_summary"
-                app:useSimpleSummaryProvider="true"
-                app:icon="@drawable/ic_navigate_next" />
-
-            <SwitchPreference
-                android:title="@string/settings_scrobble_title"
-                android:defaultValue="true"
-                android:summary="@string/settings_summary_scrobble"
-                android:key="scrobbling"
-                app:icon="@drawable/ic_refresh" />
-
-            <SeekBarPreference
-                android:key="scrobble_threshold"
-                android:title="@string/settings_scrobble_threshold_title"
-                app:showSeekBarValue="true"
-                android:defaultValue="90"
-                app:min="10"
-                android:max="100"
-                app:seekBarIncrement="5"
-                app:icon="@drawable/ic_done" />
-
-            <EditTextPreference
-                android:key="network_ping_timeout_base"
-                android:title="@string/settings_ping_timeout_title"
-                app:summary="@string/settings_ping_timeout_summary"
-                android:dialogTitle="@string/settings_ping_timeout_dialog"
-                android:inputType="number"
-                android:singleLine="true"
-                android:defaultValue="2"
-                app:icon="@drawable/ic_refresh" />
-        </PreferenceCategory>
-
         <PreferenceCategory app:title="@string/settings_title_rating">
             <SeekBarPreference
                 android:key="min_star_rating"
@@ -491,14 +475,6 @@
                 android:title="@string/settings_logout_title"
                 app:icon="@drawable/ic_close" />
         </PreferenceCategory>
-
-    </PreferenceScreen>
-
-    <!-- About -->
-    <PreferenceScreen
-        android:key="screen_about"
-        android:title="@string/settings_about_title"
-        app:icon="@drawable/ic_info_stream">
 
         <PreferenceCategory app:title="Info">
             <Preference
