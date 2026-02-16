@@ -90,6 +90,10 @@ object Preferences {
     private const val NETWORK_PING_TIMEOUT = "network_ping_timeout_base"
     private const val DOCK_ITEMS = "dock_items"
     private const val ACCENT_COLOR = "accent_color"
+    private const val NOW_PLAYING_METADATA = "now_playing_metadata"
+    private const val PLAY_NEXT_BEHAVIOR = "play_next_behavior"
+    const val PLAY_NEXT_BEHAVIOR_TOP = "top"
+    const val PLAY_NEXT_BEHAVIOR_SEQUENTIAL = "sequential"
     
 
     @JvmStatic
@@ -766,5 +770,33 @@ object Preferences {
     @JvmStatic
     fun setAccentColor(color: Int) {
         App.getInstance().preferences.edit().putInt(ACCENT_COLOR, color).apply()
+    }
+
+    @JvmStatic
+    fun getNowPlayingMetadata(): List<String> {
+        val json = App.getInstance().preferences.getString(NOW_PLAYING_METADATA, null)
+        if (json == null) {
+            return listOf(
+                Constants.METADATA_TITLE,
+                Constants.METADATA_ARTIST,
+                Constants.METADATA_ALBUM
+            )
+        }
+        return Gson().fromJson(json, object : com.google.gson.reflect.TypeToken<List<String>>() {}.type)
+    }
+
+    @JvmStatic
+    fun setNowPlayingMetadata(items: List<String>) {
+        App.getInstance().preferences.edit().putString(NOW_PLAYING_METADATA, Gson().toJson(items)).apply()
+    }
+
+    @JvmStatic
+    fun getPlayNextBehavior(): String {
+        return App.getInstance().preferences.getString(PLAY_NEXT_BEHAVIOR, PLAY_NEXT_BEHAVIOR_TOP) ?: PLAY_NEXT_BEHAVIOR_TOP
+    }
+
+    @JvmStatic
+    fun setPlayNextBehavior(behavior: String) {
+        App.getInstance().preferences.edit().putString(PLAY_NEXT_BEHAVIOR, behavior).apply()
     }
 }

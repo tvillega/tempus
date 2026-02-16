@@ -218,6 +218,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
         actionAutoDownloadLyrics();
         actionMiniPlayerHeart();
         actionConfigureDock();
+        actionConfigureMetadata();
 
         bindMediaService();
         actionAppEqualizer();
@@ -229,6 +230,17 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
             pref.setOnPreferenceClickListener(preference -> {
                 NavController navController = NavHostFragment.findNavController(this);
                 navController.navigate(R.id.dockConfigurationFragment);
+                return true;
+            });
+        }
+    }
+
+    private void actionConfigureMetadata() {
+        Preference pref = findPreference("configure_metadata");
+        if (pref != null) {
+            pref.setOnPreferenceClickListener(preference -> {
+                NavController navController = NavHostFragment.findNavController(this);
+                navController.navigate(R.id.metadataConfigurationFragment);
                 return true;
             });
         }
