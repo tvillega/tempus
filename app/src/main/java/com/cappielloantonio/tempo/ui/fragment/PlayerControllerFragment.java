@@ -87,6 +87,7 @@ public class PlayerControllerFragment extends Fragment {
     private ImageButton playerTrackInfo;
     private ConstraintLayout ratingContainer;
     private ImageButton equalizerButton;
+    private ImageButton addToPlaylistButton;
     private ImageButton overflowMenuButton;
     private ImageButton lyricsButton;
     private ChipGroup assetLinkChipGroup;
@@ -172,6 +173,8 @@ public class PlayerControllerFragment extends Fragment {
         songRatingBar =  bind.getRoot().findViewById(R.id.song_rating_bar);
         ratingContainer = bind.getRoot().findViewById(R.id.rating_container);
         equalizerButton = bind.getRoot().findViewById(R.id.player_open_equalizer_button);
+        addToPlaylistButton = bind.getRoot().findViewById(R.id.button_add_to_playlist);
+        addToPlaylistButton.setOnClickListener(v -> launchPlaylistChooser());
         overflowMenuButton = bind.getRoot().findViewById(R.id.button_overflow_menu);
         lyricsButton = bind.getRoot().findViewById(R.id.player_open_lyrics_button);
         assetLinkChipGroup = bind.getRoot().findViewById(R.id.asset_link_chip_group);
@@ -586,6 +589,7 @@ public class PlayerControllerFragment extends Fragment {
                     bind.getRoot().setShowFastForwardButton(true);
                     bind.getRoot().setRepeatToggleModes(RepeatModeUtil.REPEAT_TOGGLE_MODE_NONE);
                     bind.getRoot().findViewById(R.id.button_favorite).setVisibility(View.GONE);
+                    bind.getRoot().findViewById(R.id.button_add_to_playlist).setVisibility(View.GONE);
                     bind.getRoot().findViewById(R.id.button_overflow_menu).setVisibility(View.GONE);
                     setPlaybackParameters(mediaBrowser);
                     break;
@@ -597,6 +601,7 @@ public class PlayerControllerFragment extends Fragment {
                     bind.getRoot().setShowFastForwardButton(false);
                     bind.getRoot().setRepeatToggleModes(RepeatModeUtil.REPEAT_TOGGLE_MODE_NONE);
                     bind.getRoot().findViewById(R.id.button_favorite).setVisibility(View.GONE);
+                    bind.getRoot().findViewById(R.id.button_add_to_playlist).setVisibility(View.GONE);
                     bind.getRoot().findViewById(R.id.button_overflow_menu).setVisibility(View.GONE);
                     setPlaybackParameters(mediaBrowser);
                     break;
@@ -609,6 +614,7 @@ public class PlayerControllerFragment extends Fragment {
                     bind.getRoot().setShowFastForwardButton(false);
                     bind.getRoot().setRepeatToggleModes(RepeatModeUtil.REPEAT_TOGGLE_MODE_ALL | RepeatModeUtil.REPEAT_TOGGLE_MODE_ONE);
                     bind.getRoot().findViewById(R.id.button_favorite).setVisibility(View.VISIBLE);
+                    bind.getRoot().findViewById(R.id.button_add_to_playlist).setVisibility(View.VISIBLE);
                     bind.getRoot().findViewById(R.id.button_overflow_menu).setVisibility(View.VISIBLE);
                     setPlaybackParameters(mediaBrowser);
                     break;
@@ -722,14 +728,7 @@ public class PlayerControllerFragment extends Fragment {
             popup.setOnMenuItemClickListener(item -> {
                 int id = item.getItemId();
                 if (id == R.id.menu_add_to_playlist) {
-                    Child media = playerBottomSheetViewModel.getLiveMedia().getValue();
-                    if (media != null) {
-                        Bundle bundle = new Bundle();
-                        bundle.putParcelableArrayList(Constants.TRACKS_OBJECT, new ArrayList<>(Collections.singletonList(media)));
-                        PlaylistChooserDialog dialog = new PlaylistChooserDialog();
-                        dialog.setArguments(bundle);
-                        dialog.show(requireActivity().getSupportFragmentManager(), null);
-                    }
+                    launchPlaylistChooser();
                     return true;
                 } else if (id == R.id.menu_go_to_album) {
                     playerBottomSheetViewModel.getLiveAlbum().observe(getViewLifecycleOwner(), album -> {
@@ -781,6 +780,17 @@ public class PlayerControllerFragment extends Fragment {
             });
             popup.show();
         });
+    }
+
+    private void launchPlaylistChooser() {
+        Child media = playerBottomSheetViewModel.getLiveMedia().getValue();
+        if (media != null) {
+            Bundle bundle = new Bundle();
+            bundle.putParcelableArrayList(Constants.TRACKS_OBJECT, new ArrayList<>(Collections.singletonList(media)));
+            PlaylistChooserDialog dialog = new PlaylistChooserDialog();
+            dialog.setArguments(bundle);
+            dialog.show(requireActivity().getSupportFragmentManager(), null);
+        }
     }
 
     public void goToControllerPage() {

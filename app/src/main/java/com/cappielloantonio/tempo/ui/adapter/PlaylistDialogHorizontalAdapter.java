@@ -14,6 +14,7 @@ import com.cappielloantonio.tempo.subsonic.models.Playlist;
 import com.cappielloantonio.tempo.util.Constants;
 import com.cappielloantonio.tempo.util.MusicUtil;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -21,10 +22,12 @@ public class PlaylistDialogHorizontalAdapter extends RecyclerView.Adapter<Playli
     private final ClickCallback click;
 
     private List<Playlist> playlists;
+    private List<Playlist> allPlaylists;
 
     public PlaylistDialogHorizontalAdapter(ClickCallback click) {
         this.click = click;
         this.playlists = Collections.emptyList();
+        this.allPlaylists = Collections.emptyList();
     }
 
     @NonNull
@@ -48,7 +51,23 @@ public class PlaylistDialogHorizontalAdapter extends RecyclerView.Adapter<Playli
     }
 
     public void setItems(List<Playlist> playlists) {
+        this.allPlaylists = playlists;
         this.playlists = playlists;
+        notifyDataSetChanged();
+    }
+
+    public void filter(String query) {
+        if (query == null || query.isEmpty()) {
+            playlists = allPlaylists;
+        } else {
+            List<Playlist> filteredList = new ArrayList<>();
+            for (Playlist playlist : allPlaylists) {
+                if (playlist.getName() != null && playlist.getName().toLowerCase().contains(query.toLowerCase())) {
+                    filteredList.add(playlist);
+                }
+            }
+            playlists = filteredList;
+        }
         notifyDataSetChanged();
     }
 
