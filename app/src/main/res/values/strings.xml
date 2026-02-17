@@ -501,6 +501,7 @@
     <string name="song_bottom_sheet_remove">Remove from device</string>
     <string name="song_bottom_sheet_remove_from_playlist">Remove from playlist</string>
     <string name="song_bottom_sheet_share">Share</string>
+    <string name="song_bottom_sheet_track_info">Track Info</string>
     <string name="playlist_pin">Pin</string>
     <string name="playlist_unpin">Unpin</string>
     <string name="song_list_page_top_played">Top played songs</string>

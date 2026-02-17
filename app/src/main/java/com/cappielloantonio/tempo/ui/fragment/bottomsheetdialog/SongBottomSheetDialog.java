@@ -31,6 +31,7 @@ import com.cappielloantonio.tempo.subsonic.models.Child;
 import com.cappielloantonio.tempo.ui.activity.MainActivity;
 import com.cappielloantonio.tempo.ui.dialog.PlaylistChooserDialog;
 import com.cappielloantonio.tempo.ui.dialog.RatingDialog;
+import com.cappielloantonio.tempo.ui.dialog.TrackInfoDialog;
 import com.cappielloantonio.tempo.util.AssetLinkUtil;
 import com.cappielloantonio.tempo.util.Constants;
 import com.cappielloantonio.tempo.util.DownloadUtil;
@@ -313,6 +314,13 @@ public class SongBottomSheetDialog extends BottomSheetDialogFragment implements 
         }));
 
         share.setVisibility(Preferences.isSharingEnabled() ? View.VISIBLE : View.GONE);
+
+        TextView trackInfo = view.findViewById(R.id.track_info_text_view);
+        trackInfo.setOnClickListener(v -> {
+            TrackInfoDialog dialog = new TrackInfoDialog(MappingUtil.mapMediaItem(song).mediaMetadata);
+            dialog.show(requireActivity().getSupportFragmentManager(), null);
+            dismissBottomSheet();
+        });
     }
 
     @Override
