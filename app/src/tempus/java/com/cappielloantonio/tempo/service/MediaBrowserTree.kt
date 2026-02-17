@@ -148,6 +148,9 @@ object MediaBrowserTree {
     fun buildTree() {
         val albumView: Boolean = Preferences.isAndroidAutoAlbumViewEnabled()
         val homeView: Boolean = Preferences.isAndroidAutoHomeViewEnabled()
+        val playlistView: Boolean = Preferences.isAndroidAutoPlaylistViewEnabled()
+        val podcastView: Boolean = Preferences.isAndroidAutoPodcastViewEnabled()
+        val radioView: Boolean = Preferences.isAndroidAutoRadioViewEnabled()
 
 		val tabIndex = listOf(
 			Preferences.getAndroidAutoFirstTab(),
@@ -264,7 +267,7 @@ object MediaBrowserTree {
         treeNodes[PLAYLIST_ID] =
             MediaItemNode(
                 buildMediaItem(
-                    gridView = false,
+                    gridView = playlistView,
                     title = appContext.getString(R.string.aa_playlists),
                     mediaId = PLAYLIST_ID,
                     isPlayable = false,
@@ -277,7 +280,7 @@ object MediaBrowserTree {
         treeNodes[PODCAST_ID] =
             MediaItemNode(
                 buildMediaItem(
-                    gridView = albumView,
+                    gridView = podcastView,
                     title = appContext.getString(R.string.aa_podcast),
                     mediaId = PODCAST_ID,
                     isPlayable = false,
@@ -290,7 +293,7 @@ object MediaBrowserTree {
         treeNodes[RADIO_ID] =
             MediaItemNode(
                 buildMediaItem(
-                    gridView = albumView,
+                    gridView = radioView,
                     title = appContext.getString(R.string.aa_radio),
                     mediaId = RADIO_ID,
                     isPlayable = false,

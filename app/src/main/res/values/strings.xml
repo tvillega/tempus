@@ -392,6 +392,9 @@
 	<string name="settings_androidauto">Android Auto</string>
 	<string name="settings_androidauto_album_view">Grid view for albums</string>
 	<string name="settings_androidauto_home_view">Grid view for home</string>
+    <string name="settings_androidauto_playlist_view">Grid view for playlists</string>
+    <string name="settings_androidauto_podcast_view">Grid view for podcast</string>
+    <string name="settings_androidauto_radio_view">Grid view for radio</string>
 	<string name="settings_androidauto_first_tab">First tab display</string>
 	<string name="settings_androidauto_second_tab">Second tab display</string>
 	<string name="settings_androidauto_third_tab">Third tab display</string>

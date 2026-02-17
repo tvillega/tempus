@@ -90,6 +90,9 @@ object Preferences {
     
     private const val AA_ALBUM_VIEW = "androidauto_album_view"
 	private const val AA_HOME_VIEW = "androidauto_home_view"
+    private const val AA_PLAYLIST_VIEW = "androidauto_playlist_view"
+    private const val AA_PODCAST_VIEW = "androidauto_podcast_view"
+    private const val AA_RADIO_VIEW = "androidauto_radio_view"
 	private const val AA_FIRST_TAB = "androidauto_first_tab"
 	private const val AA_SECOND_TAB = "androidauto_second_tab"
 	private const val AA_THIRD_TAB = "androidauto_third_tab"
@@ -739,6 +742,21 @@ object Preferences {
     @JvmStatic
     fun isAndroidAutoHomeViewEnabled(): Boolean {
         return App.getInstance().preferences.getBoolean(AA_HOME_VIEW, false)
+    }
+
+    @JvmStatic
+    fun isAndroidAutoPlaylistViewEnabled(): Boolean {
+        return App.getInstance().preferences.getBoolean(AA_PLAYLIST_VIEW, false)
+    }
+
+    @JvmStatic
+    fun isAndroidAutoPodcastViewEnabled(): Boolean {
+        return App.getInstance().preferences.getBoolean(AA_PODCAST_VIEW, false)
+    }
+
+    @JvmStatic
+    fun isAndroidAutoRadioViewEnabled(): Boolean {
+        return App.getInstance().preferences.getBoolean(AA_RADIO_VIEW, false)
     }
 
     @JvmStatic

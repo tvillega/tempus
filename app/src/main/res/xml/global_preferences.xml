@@ -444,23 +444,38 @@
             android:key="github_update_check" />
     </PreferenceCategory>
 
-	<!-- Add by MFO for android auto configuration -->
+	<!-- Android Auto configuration -->
     <PreferenceCategory app:title="@string/settings_androidauto">
          <Preference
             app:selectable="false"
             app:summary="@string/home_rearrangement_dialog_subtitle" />
-        
-		<SwitchPreference
-            android:title="@string/settings_androidauto_album_view"
-            android:defaultValue="true"
-            android:key="androidauto_album_view" />
-        
-		<SwitchPreference
+
+        <SwitchPreference
             android:title="@string/settings_androidauto_home_view"
             android:defaultValue="false"
             android:key="androidauto_home_view" />
-    
-	    <ListPreference
+
+        <SwitchPreference
+            android:title="@string/settings_androidauto_album_view"
+            android:defaultValue="true"
+            android:key="androidauto_album_view" />
+
+        <SwitchPreference
+            android:title="@string/settings_androidauto_playlist_view"
+            android:defaultValue="false"
+            android:key="androidauto_playlist_view" />
+
+        <SwitchPreference
+            android:title="@string/settings_androidauto_radio_view"
+            android:defaultValue="false"
+            android:key="androidauto_radio_view" />
+
+        <SwitchPreference
+            android:title="@string/settings_androidauto_podcast_view"
+            android:defaultValue="false"
+            android:key="androidauto_podcast_view" />
+
+        <ListPreference
             app:defaultValue="0"
             app:dialogTitle="@string/settings_androidauto_first_tab"
             app:entries="@array/aa_tab_titles"

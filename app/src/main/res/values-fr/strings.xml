@@ -331,6 +331,9 @@
 	<string name="settings_androidauto">Android Auto</string>
 	<string name="settings_androidauto_album_view">Vue en grille des albums</string>
 	<string name="settings_androidauto_home_view">Vue en grille du menu accueil</string>
+    <string name="settings_androidauto_playlist_view">Vue en grille des playlists</string>
+    <string name="settings_androidauto_podcast_view">Vue en grille des podcasts</string>
+    <string name="settings_androidauto_radio_view">Vue en grille des radios</string>
 	<string name="settings_androidauto_first_tab">Affichage du premier onglet</string>
 	<string name="settings_androidauto_second_tab">Affichage du deuxième onglet</string>
 	<string name="settings_androidauto_third_tab">Affichage du troisième onglet</string>
