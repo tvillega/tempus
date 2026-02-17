@@ -1,6 +1,5 @@
 package com.cappielloantonio.tempo.util
 
-import android.util.Log
 import androidx.media3.common.Player
 import com.cappielloantonio.tempo.App
 import com.cappielloantonio.tempo.model.HomeSector
@@ -131,32 +130,32 @@ object Preferences {
 
     @JvmStatic
     fun getPassword(): String? {
-        return App.getInstance().preferences.getString(PASSWORD, null)
+        return App.getInstance().encryptedPreferences.getString(PASSWORD, null)
     }
 
     @JvmStatic
     fun setPassword(password: String?) {
-        App.getInstance().preferences.edit().putString(PASSWORD, password).apply()
+        App.getInstance().encryptedPreferences.edit().putString(PASSWORD, password).apply()
     }
 
     @JvmStatic
     fun getToken(): String? {
-        return App.getInstance().preferences.getString(TOKEN, null)
+        return App.getInstance().encryptedPreferences.getString(TOKEN, null)
     }
 
     @JvmStatic
     fun setToken(token: String?) {
-        App.getInstance().preferences.edit().putString(TOKEN, token).apply()
+        App.getInstance().encryptedPreferences.edit().putString(TOKEN, token).apply()
     }
 
     @JvmStatic
     fun getSalt(): String? {
-        return App.getInstance().preferences.getString(SALT, null)
+        return App.getInstance().encryptedPreferences.getString(SALT, null)
     }
 
     @JvmStatic
     fun setSalt(salt: String?) {
-        App.getInstance().preferences.edit().putString(SALT, salt).apply()
+        App.getInstance().encryptedPreferences.edit().putString(SALT, salt).apply()
     }
 
     @JvmStatic
@@ -719,12 +718,9 @@ object Preferences {
 
     @JvmStatic
     fun getArtistSortOrder(): String {
-        val sort_by_album_count = App.getInstance().preferences.getBoolean(ARTIST_SORT_BY_ALBUM_COUNT, false)
-        Log.d("Preferences", "getSortOrder")
-        if (sort_by_album_count)
-            return Constants.ARTIST_ORDER_BY_ALBUM_COUNT
-        else
-            return Constants.ARTIST_ORDER_BY_NAME
+        val sortByAlbumCount = App.getInstance().preferences.getBoolean(ARTIST_SORT_BY_ALBUM_COUNT, false)
+        return if (sortByAlbumCount) Constants.ARTIST_ORDER_BY_ALBUM_COUNT
+        else Constants.ARTIST_ORDER_BY_NAME
     }
 
     @JvmStatic
@@ -812,11 +808,11 @@ object Preferences {
 
     @JvmStatic
     fun getLastFmApiKey(): String? {
-        return App.getInstance().preferences.getString(Constants.LAST_FM_API_KEY, null)
+        return App.getInstance().encryptedPreferences.getString(Constants.LAST_FM_API_KEY, null)
     }
 
     @JvmStatic
     fun setLastFmApiKey(apiKey: String?) {
-        App.getInstance().preferences.edit().putString(Constants.LAST_FM_API_KEY, apiKey).apply()
+        App.getInstance().encryptedPreferences.edit().putString(Constants.LAST_FM_API_KEY, apiKey).apply()
     }
 }

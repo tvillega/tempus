@@ -6,6 +6,8 @@ import android.content.SharedPreferences;
 
 import androidx.annotation.NonNull;
 import androidx.preference.PreferenceManager;
+import androidx.security.crypto.EncryptedSharedPreferences;
+import androidx.security.crypto.MasterKeys;
 
 import com.cappielloantonio.tempo.github.Github;
 import com.cappielloantonio.tempo.helper.ThemeHelper;
@@ -19,6 +21,9 @@ public class App extends Application {
     private static Subsonic subsonic;
     private static Github github;
     private static SharedPreferences preferences;
+    private static SharedPreferences encryptedPreferences;
+
+    private static final String[] SENSITIVE_KEYS = {"password", "token", "salt", "last_fm_api_key"};
 
     @Override
     public void onCreate() {
@@ -31,6 +36,47 @@ public class App extends Application {
         instance = new App();
         context = getApplicationContext();
         preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        initEncryptedPreferences();
+    }
+
+    private void initEncryptedPreferences() {
+        try {
+            String masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC);
+            encryptedPreferences = EncryptedSharedPreferences.create(
+                    "secure_prefs",
+                    masterKeyAlias,
+                    context,
+                    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            );
+            migrateSensitivePreferences();
+        } catch (Exception e) {
+            encryptedPreferences = null;
+        }
+    }
+
+    private void migrateSensitivePreferences() {
+        if (encryptedPreferences == null) return;
+
+        SharedPreferences.Editor encEditor = encryptedPreferences.edit();
+        SharedPreferences.Editor plainEditor = preferences.edit();
+        boolean migrated = false;
+
+        for (String key : SENSITIVE_KEYS) {
+            if (preferences.contains(key) && !encryptedPreferences.contains(key)) {
+                String value = preferences.getString(key, null);
+                if (value != null) {
+                    encEditor.putString(key, value);
+                    plainEditor.remove(key);
+                    migrated = true;
+                }
+            }
+        }
+
+        if (migrated) {
+            encEditor.apply();
+            plainEditor.apply();
+        }
     }
 
     public static App getInstance() {
@@ -110,6 +156,11 @@ public class App extends Application {
             preferences = PreferenceManager.getDefaultSharedPreferences(context);
         }
 
+        return preferences;
+    }
+
+    public SharedPreferences getEncryptedPreferences() {
+        if (encryptedPreferences != null) return encryptedPreferences;
         return preferences;
     }
 

@@ -438,9 +438,7 @@
     <string name="track_info_transcoded_content_type">Dönüştürülmüş içerik türü</string>
     <string name="track_info_transcoded_suffix">Dönüştürülmüş uzantı</string>
     <string name="track_info_year">Yıl</string>
-    <string name="undraw_page">unDraw</string>
-    <string name="undraw_thanks">İllüstrasyonlarıyla bu uygulamayı daha güzel hale getirmemize yardımcı olan unDraw’a özel teşekkürler.</string>
-    <string name="undraw_url">https://undraw.co/</string>
+
     <string name="home_sync_starred_albums_title">Yıldızlı Albümleri Senkronize Et</string>
     <string name="widget_label">Tempus Widget</string>
     <string name="widget_not_playing">Şu an oynatılmıyor</string>

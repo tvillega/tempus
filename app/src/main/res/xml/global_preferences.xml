@@ -478,14 +478,6 @@
 
         <PreferenceCategory app:title="Info">
             <Preference
-                android:key="version"
-                app:summary="@string/settings_version_summary"
-                app:title="@string/settings_version_title"
-                app:icon="@drawable/ic_check_circle" />
-        </PreferenceCategory>
-
-        <PreferenceCategory app:title="Community &amp; Support">
-            <Preference
                 app:summary="@string/settings_github_summary"
                 app:title="@string/settings_github_title"
                 app:icon="@drawable/ic_link">
@@ -495,22 +487,10 @@
             </Preference>
 
             <Preference
-                app:summary="@string/settings_support_summary"
-                app:title="@string/settings_support_title"
-                app:icon="@drawable/ic_favorite">
-                <intent
-                    android:action="android.intent.action.VIEW"
-                    android:data="@string/settings_support_discussion_link" />
-            </Preference>
-
-            <Preference
-                app:summary="@string/undraw_thanks"
-                app:title="@string/undraw_page"
-                app:icon="@drawable/ic_info_stream">
-                <intent
-                    android:action="android.intent.action.VIEW"
-                    android:data="@string/undraw_url" />
-            </Preference>
+                android:key="version"
+                app:summary="@string/settings_version_summary"
+                app:title="@string/settings_version_title"
+                app:icon="@drawable/ic_check_circle" />
         </PreferenceCategory>
 
     </PreferenceScreen>

@@ -344,12 +344,11 @@
     <string name="settings_github_link">https://github.com/eddyizm/tempus</string>
     <string name="settings_github_summary">Urmăriți dezvoltarea</string>
     <string name="settings_github_title">Github</string>
-    <string name="settings_support_discussion_link">https://github.com/eddyizm/tempus/discussions</string>
+
     <string name="settings_github_update">Actualizări</string>
     <string name="settings_github_update_title">Verificați pe github lansări noi</string>
     <string name="settings_github_update_summary">Dacă utilizați versiunea github, prin implicare, aplicația va verifica noile versiuni de apk. Comutați pentru a dezactiva verificările automate pe github</string>
-    <string name="settings_support_summary">Alăturați-vă discuțiilor comunității și asistență</string>
-    <string name="settings_support_title">Asistență utilizator</string>
+
     <string name="settings_scan_result">Scanare: numărare %1$d piese</string>
     <string name="settings_image_size">Setați rezoluția imaginii</string>
     <string name="settings_language">Limbă</string>
@@ -510,9 +509,7 @@
     <string name="track_info_transcoded_content_type">Tip conținut transcodat</string>
     <string name="track_info_transcoded_suffix">Sufix transcodat</string>
     <string name="track_info_year">Anul</string>
-    <string name="undraw_page">unDraw</string>
-    <string name="undraw_thanks">Mulțumiri speciale merită unDraw fără ale cărui ilustrații nu am putut face această aplicație mai frumoasă.</string>
-    <string name="undraw_url">https://undraw.co/</string>
+
     <string name="widget_label">Widget Tempus</string>
     <string name="widget_not_playing">Nu se redă</string>
     <string name="widget_placeholder_subtitle">Deschideți Tempus</string>

@@ -1,9 +1,9 @@
 package com.cappielloantonio.tempo.subsonic.api.navidrome
 
-import android.util.Log
 import com.cappielloantonio.tempo.subsonic.models.ArtistID3
 import com.cappielloantonio.tempo.subsonic.models.Child
 import com.cappielloantonio.tempo.util.Preferences
+import com.cappielloantonio.tempo.BuildConfig
 import com.google.gson.GsonBuilder
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -14,8 +14,6 @@ import java.util.concurrent.TimeUnit
 class NavidromeClient {
 
     companion object {
-        private const val TAG = "NavidromeClient"
-
         @Volatile
         private var instance: NavidromeClient? = null
 
@@ -37,7 +35,6 @@ class NavidromeClient {
 
     init {
         val baseUrl = getBaseUrl()
-        Log.d(TAG, "init: baseUrl=$baseUrl")
 
         val gson = GsonBuilder().setLenient().create()
 
@@ -46,7 +43,10 @@ class NavidromeClient {
             .connectTimeout(20, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)
-            .addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
+            .addInterceptor(HttpLoggingInterceptor().setLevel(
+                if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BASIC
+                else HttpLoggingInterceptor.Level.NONE
+            ))
             .build()
 
         service = Retrofit.Builder()
@@ -70,12 +70,9 @@ class NavidromeClient {
             val response = service.login(NavidromeCredentials(username, password)).execute()
             if (response.isSuccessful && response.body()?.token != null) {
                 jwtToken = "Bearer ${response.body()!!.token}"
-                Log.d(TAG, "authenticate: success")
                 return jwtToken
             }
-            Log.e(TAG, "authenticate: failed, code=${response.code()}")
-        } catch (e: Exception) {
-            Log.e(TAG, "authenticate: exception", e)
+        } catch (_: Exception) {
         }
         return null
     }
@@ -94,13 +91,9 @@ class NavidromeClient {
             ).execute()
 
             if (response.isSuccessful && response.body() != null) {
-                val songs = response.body()!!
-                Log.d(TAG, "getRecentlyPlayedSongs: got ${songs.size} songs")
-                return songs.map { it.toChild() }
+                return response.body()!!.map { it.toChild() }
             }
-            Log.e(TAG, "getRecentlyPlayedSongs: failed, code=${response.code()}")
-        } catch (e: Exception) {
-            Log.e(TAG, "getRecentlyPlayedSongs: exception", e)
+        } catch (_: Exception) {
         }
         return emptyList()
     }
@@ -119,13 +112,9 @@ class NavidromeClient {
             ).execute()
 
             if (response.isSuccessful && response.body() != null) {
-                val artists = response.body()!!
-                Log.d(TAG, "getRecentlyPlayedArtists: got ${artists.size} artists")
-                return artists.map { it.toArtistID3() }
+                return response.body()!!.map { it.toArtistID3() }
             }
-            Log.e(TAG, "getRecentlyPlayedArtists: failed, code=${response.code()}")
-        } catch (e: Exception) {
-            Log.e(TAG, "getRecentlyPlayedArtists: exception", e)
+        } catch (_: Exception) {
         }
         return emptyList()
     }
@@ -143,13 +132,9 @@ class NavidromeClient {
             ).execute()
 
             if (response.isSuccessful && response.body() != null) {
-                val artists = response.body()!!
-                Log.d(TAG, "getTopPlayedArtists: got ${artists.size} artists")
-                return artists.map { it.toArtistID3() }
+                return response.body()!!.map { it.toArtistID3() }
             }
-            Log.e(TAG, "getTopPlayedArtists: failed, code=${response.code()}")
-        } catch (e: Exception) {
-            Log.e(TAG, "getTopPlayedArtists: exception", e)
+        } catch (_: Exception) {
         }
         return emptyList()
     }
@@ -167,13 +152,9 @@ class NavidromeClient {
             ).execute()
 
             if (response.isSuccessful && response.body() != null) {
-                val songs = response.body()!!
-                Log.d(TAG, "getTopPlayedSongs: got ${songs.size} songs")
-                return songs.map { it.toChild() }
+                return response.body()!!.map { it.toChild() }
             }
-            Log.e(TAG, "getTopPlayedSongs: failed, code=${response.code()}")
-        } catch (e: Exception) {
-            Log.e(TAG, "getTopPlayedSongs: exception", e)
+        } catch (_: Exception) {
         }
         return emptyList()
     }

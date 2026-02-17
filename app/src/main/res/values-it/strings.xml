@@ -347,12 +347,10 @@
     <string name="settings_github_link">https://github.com/eddyizm/tempus</string>
     <string name="settings_github_summary">Segui lo sviluppo</string>
     <string name="settings_github_title">Github</string>
-    <string name="settings_support_discussion_link">https://github.com/eddyizm/tempus/discussions</string>
+
     <string name="settings_github_update">Aggiornamenti</string>
     <string name="settings_github_update_title">Controlla GitHub per aggiornamenti</string>
     <string name="settings_github_update_summary">Se si utilizza la versione GitHub, per impostazione predefinita l\'app controllerà la presenza di nuove versioni. Disattiva per disabilitare i controlli automatici su GitHub</string>
-    <string name="settings_support_summary">Partecipa alle discussioni della community e al supporto</string>
-    <string name="settings_support_title">Supporto utenti</string>
     <string name="settings_scan_result">Scansione: conteggio di %1$d brani</string>
     <string name="settings_image_size">Imposta risoluzione delle immagini</string>
     <string name="settings_language">Lingua</string>
@@ -517,9 +515,6 @@
     <string name="track_info_transcoded_content_type">Tipo di contenuto transcodificato</string>
     <string name="track_info_transcoded_suffix">Suffisso transcodificato</string>
     <string name="track_info_year">Anno</string>
-    <string name="undraw_page">unDraw</string>
-    <string name="undraw_thanks">Un ringraziamento speciale va a unDraw, senza le cui illustrazioni non avremmo potuto rendere questa applicazione più bella.</string>
-    <string name="undraw_url">https://undraw.co/</string>
     <string name="widget_label">Widget Tempus</string>
     <string name="widget_not_playing">Non in riproduzione</string>
     <string name="widget_placeholder_subtitle">Apri Tempus</string>

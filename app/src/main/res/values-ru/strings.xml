@@ -357,8 +357,7 @@
     <string name="settings_sync_starred_tracks_for_offline_use_summary">Если этот параметр включен, помеченные треки будут загружены для использования в автономном режиме.</string>
     <string name="settings_sync_starred_tracks_for_offline_use_title">Синхронизировать помеченные треки для использования в автономном режиме.</string>
     <string name="settings_sync_starred_artists_for_offline_use_title">Синхронизировать избранных исполнителей для использования офлайн</string>
-    <string name="settings_support_summary">Присоединяйтесь к обсуждениям в сообществе и оказывайте поддержку</string>
-    <string name="settings_support_title">Поддержка пользователей</string>
+
     <string name="settings_theme">Тема</string>
     <string name="settings_title_data">Данные</string>
     <string name="settings_title_general">Общий</string>
@@ -443,9 +442,7 @@
     <string name="track_info_transcoded_content_type">Тип транскодированного контента</string>
     <string name="track_info_transcoded_suffix">Транскодированный суффикс</string>
     <string name="track_info_year">Год</string>
-    <string name="undraw_page">Развернуть</string>
-    <string name="undraw_thanks">Особая благодарность — команде unDraw, без иллюстраций которой мы не смогли бы сделать это приложение красивее.</string>
-    <string name="undraw_url">https://undraw.co/</string>
+
     <plurals name="home_sync_starred_albums_count">
         <item quantity="one">Альбомов для синхронизации: %d</item>
         <item quantity="other">Альбомов для синхронизации: %d</item>

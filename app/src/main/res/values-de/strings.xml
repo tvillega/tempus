@@ -388,9 +388,7 @@
     <string name="streaming_cache_storage_external_dialog_positive_button">Extern</string>
     <string name="streaming_cache_storage_internal_dialog_negative_button">Intern</string>
     <string name="support_url">https://buymeacoffee.com/a.cappiello</string>
-    <string name="undraw_page">unDraw</string>
-    <string name="undraw_thanks">Besonders möchten wir uns bei unDraw bedanken, durch deren Illustrationen wir diese App so schön machen konnten.</string>
-    <string name="undraw_url">https://undraw.co/</string>
+
     <string name="track_info_dialog_positive_button">OK</string>
     <string name="track_info_dialog_title">Titel Info</string>
     <string name="track_info_title">Titel</string>

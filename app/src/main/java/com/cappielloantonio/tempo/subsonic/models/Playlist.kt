@@ -29,6 +29,7 @@ open class Playlist(
     var coverArtId: String? = null,
 ) : Parcelable {
     @Ignore
+    @IgnoredOnParcel
     var isPinned: Boolean = false
     @Ignore
     @IgnoredOnParcel

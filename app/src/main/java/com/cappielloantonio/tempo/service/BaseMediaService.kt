@@ -229,8 +229,8 @@ open class BaseMediaService : MediaLibraryService() {
             override fun onMetadata(metadata: Metadata) {
                 // Handle streaming metadata (ICY, ID3) for radio / streaming content
                 val currentItem = player.currentMediaItem ?: return
-                val extras = currentItem.mediaMetadata.extras
-                if (extras?.getString("type") != Constants.MEDIA_TYPE_RADIO) return
+                val extras = currentItem.mediaMetadata.extras ?: return
+                if (extras.getString("type") != Constants.MEDIA_TYPE_RADIO) return
 
                 var artist: String? = null
                 var title: String? = null
@@ -281,14 +281,14 @@ open class BaseMediaService : MediaLibraryService() {
                 if (currentIndex == C.INDEX_UNSET) return
 
                 val metadataBuilder = currentItem.mediaMetadata.buildUpon()
-                val newExtras = Bundle(extras ?: Bundle())
+                val newExtras = Bundle(extras)
 
                 // Store individual values in extras for UI
                 artist?.let { newExtras.putString("radioArtist", it) }
                 title?.let { newExtras.putString("radioTitle", it) }
 
                 // Get station name (preserve if already set)
-                val stationName = extras?.getString("stationName")
+                val stationName = extras.getString("stationName")
                     ?: currentItem.mediaMetadata.title?.toString()
                     ?: ""
                 if (stationName.isNotBlank()) {
@@ -585,18 +585,17 @@ open class BaseMediaService : MediaLibraryService() {
     private fun checkRadioHttpHeaders() {
         val player = mediaLibrarySession.player
         val currentItem = player.currentMediaItem ?: return
-        val extras = currentItem.mediaMetadata.extras
-        val mediaType = extras?.getString("type")
-        if (mediaType != Constants.MEDIA_TYPE_RADIO) return
+        val extras = currentItem.mediaMetadata.extras ?: return
+        if (extras.getString("type") != Constants.MEDIA_TYPE_RADIO) return
         
         // Skip if we already have embedded metadata (ICY/ID3) - HTTP headers are only fallback
         val hasEmbeddedMetadata = !currentItem.mediaMetadata.artist.isNullOrBlank() ||
                 !currentItem.mediaMetadata.title.isNullOrBlank() ||
-                (extras != null && !extras.getString("radioArtist").isNullOrBlank()) ||
-                (extras != null && !extras.getString("radioTitle").isNullOrBlank())
+                !extras.getString("radioArtist").isNullOrBlank() ||
+                !extras.getString("radioTitle").isNullOrBlank()
         if (hasEmbeddedMetadata) return
         
-        val streamUrl = extras?.getString("uri") ?: currentItem.requestMetadata.mediaUri?.toString()
+        val streamUrl = extras.getString("uri") ?: currentItem.requestMetadata.mediaUri?.toString()
         if (streamUrl.isNullOrBlank()) return
 
         try {
@@ -650,25 +649,25 @@ open class BaseMediaService : MediaLibraryService() {
             val currentIndex = player.currentMediaItemIndex
             if (currentIndex == C.INDEX_UNSET) return@post
             
-            val currentExtras = currentItemNow.mediaMetadata.extras
-            if (currentExtras?.getString("type") != Constants.MEDIA_TYPE_RADIO) return@post
+            val currentExtras = currentItemNow.mediaMetadata.extras ?: return@post
+            if (currentExtras.getString("type") != Constants.MEDIA_TYPE_RADIO) return@post
             
             // Double-check we still don't have embedded metadata (might have arrived since check)
             val hasEmbeddedMetadata = !currentItemNow.mediaMetadata.artist.isNullOrBlank() ||
                     !currentItemNow.mediaMetadata.title.isNullOrBlank() ||
-                    (currentExtras != null && !currentExtras.getString("radioArtist").isNullOrBlank()) ||
-                    (currentExtras != null && !currentExtras.getString("radioTitle").isNullOrBlank())
+                    !currentExtras.getString("radioArtist").isNullOrBlank() ||
+                    !currentExtras.getString("radioTitle").isNullOrBlank()
             if (hasEmbeddedMetadata) return@post
             
             val metadataBuilder = currentItemNow.mediaMetadata.buildUpon()
-            val newExtras = Bundle(currentExtras ?: Bundle())
+            val newExtras = Bundle(currentExtras)
             
             // Store individual values in extras for UI
             artist?.let { newExtras.putString("radioArtist", it) }
             title?.let { newExtras.putString("radioTitle", it) }
             
             // Get station name (preserve if already set)
-            val stationName = currentExtras?.getString("stationName")
+            val stationName = currentExtras.getString("stationName")
                 ?: currentItemNow.mediaMetadata.title?.toString()
                 ?: ""
             if (stationName.isNotBlank()) {

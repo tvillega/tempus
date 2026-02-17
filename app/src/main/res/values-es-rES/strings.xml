@@ -181,7 +181,7 @@
     <string name="menu_group_by_artist">Artista</string>
     <string name="settings_github_update_title">Comprobar actualizaciones en GitHub</string>
     <string name="settings_scan_result">Escaneo: hay %1$d pistas</string>
-    <string name="settings_support_title">Soporte al usuario</string>
+
     <string name="settings_image_size">Resolución de la imagen</string>
     <string name="settings_language">Idioma</string>
     <string name="settings_system_language">Idioma del sistema</string>
@@ -368,8 +368,7 @@
     <string name="track_info_year">Año</string>
     <string name="track_info_summary_transcoding_codec">La aplicación pedirá al servidor transcodificar el archivo. El códec solicitado por el usuario es %1$s, mientras que la tasa de bits será la misma que la del archivo de origen. La posible transcodificación del archivo al formato seleccionado dependerá del servidor, que podrá soportar, o no, la operación.</string>
     <string name="track_info_title">Título</string>
-    <string name="undraw_page">unDraw</string>
-    <string name="undraw_thanks">Agradecimientos a unDraw, ya que sin sus ilustraciones no podríamos haber hecho esta aplicación más bonita.</string>
+
     <string name="settings_scrobble_title">Habilitar el rastreo de música (scrobbling)</string>
     <string name="settings_streaming_cache_size">Tamaño de la caché de streaming</string>
     <string name="settings_streaming_cache_storage_title">Almacenamiento de la caché de streaming</string>
@@ -377,7 +376,7 @@
     <string name="settings_sub_summary_scrobble">Debe saber que el scrobbling necesita que el servidor tenga habilitada esta característica</string>
     <string name="settings_summary_syncing">Devuelve el estado de la cola de reproducción para este usuario. Esto incluye las pistas en la cola, la pista que se está reproduciendo actualmente y su posición. El servidor debe soportar esta característica.</string>
     <string name="settings_summary_streaming_cache_size">%1$s\nEn uso:   %2$s MiB</string>
-    <string name="undraw_url">https://undraw.co/</string>
+
     <string name="track_info_track_number">Número de pista</string>
     <string name="settings_item_rating_summary">Si se habilita, se mostrará la valoración del elemento y si está marcado como favorito.</string>
     <string name="settings_queue_syncing_countdown">Temporizador de sincronización</string>
@@ -497,7 +496,7 @@
     <string name="player_lyrics_download_success">Letra guardada para uso sin conexión</string>
     <string name="settings_allow_playlist_duplicates">Permitir añadir pistas repetidas a la lista</string>
     <string name="settings_github_update_summary">Si se usa la versión de GitHub, la app comprobará nuevas actualizaciones del APK.</string>
-    <string name="settings_support_summary">Participa en las discusiones y el soporte de la comunidad</string>
+
     <string name="settings_show_mini_shuffle_button">Mostrar el botón «Aleatorio»</string>
     <string name="settings_auto_download_lyrics">Descargar automáticamente las letras</string>
     <string name="starred_artist_sync_dialog_summary">Descargar los artistas destacados podría consumir una gran cantidad de datos.</string>

@@ -60,7 +60,6 @@ public class DockConfigurationFragment extends Fragment {
                 Constants.DOCK_ITEM_SETTINGS,
                 Constants.DOCK_ITEM_LIBRARY,
                 Constants.DOCK_ITEM_DOWNLOADS,
-                Constants.DOCK_ITEM_ALBUMS,
                 Constants.DOCK_ITEM_PLAYLISTS
         ));
 
@@ -163,7 +162,6 @@ public class DockConfigurationFragment extends Fragment {
             switch (item) {
                 case Constants.DOCK_ITEM_LIBRARY: return "Library";
                 case Constants.DOCK_ITEM_DOWNLOADS: return "Downloads";
-                case Constants.DOCK_ITEM_ALBUMS: return "Albums";
                 case Constants.DOCK_ITEM_PLAYLISTS: return "Playlists";
                 case Constants.DOCK_ITEM_SEARCH: return "Search";
                 case Constants.DOCK_ITEM_SETTINGS: return "Settings";
@@ -175,7 +173,6 @@ public class DockConfigurationFragment extends Fragment {
             switch (item) {
                 case Constants.DOCK_ITEM_LIBRARY: return R.drawable.ic_graphic_eq;
                 case Constants.DOCK_ITEM_DOWNLOADS: return R.drawable.ic_file_download;
-                case Constants.DOCK_ITEM_ALBUMS: return R.drawable.ic_placeholder_album;
                 case Constants.DOCK_ITEM_PLAYLISTS: return R.drawable.ic_placeholder_playlist;
                 case Constants.DOCK_ITEM_SEARCH: return R.drawable.ic_search;
                 case Constants.DOCK_ITEM_SETTINGS: return R.drawable.ic_settings;

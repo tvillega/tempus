@@ -3,6 +3,7 @@ package com.cappielloantonio.tempo.subsonic
 import com.cappielloantonio.tempo.App
 import com.cappielloantonio.tempo.subsonic.utils.CacheUtil
 import com.cappielloantonio.tempo.subsonic.utils.EmptyDateTypeAdapter
+import com.cappielloantonio.tempo.BuildConfig
 import com.google.gson.GsonBuilder
 import okhttp3.Cache
 import okhttp3.OkHttpClient
@@ -55,7 +56,10 @@ class RetrofitClient(subsonic: Subsonic) {
 
     private fun getHttpLoggingInterceptor(): HttpLoggingInterceptor {
         val loggingInterceptor = HttpLoggingInterceptor()
-        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
+        loggingInterceptor.setLevel(
+            if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BASIC
+            else HttpLoggingInterceptor.Level.NONE
+        )
         return loggingInterceptor
     }
 

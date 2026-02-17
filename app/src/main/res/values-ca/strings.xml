@@ -331,12 +331,11 @@
     <string name="settings_github_link">https://github.com/eddyizm/tempus</string>
     <string name="settings_github_summary">Seguiu el desenvolupament</string>
     <string name="settings_github_title">Github</string>
-    <string name="settings_support_discussion_link">https://github.com/eddyizm/tempus/discussions</string>
+
     <string name="settings_github_update">Actualitzacions</string>
     <string name="settings_github_update_title">Comprova si hi ha actualitzacions a GitHub</string>
     <string name="settings_github_update_summary">Si feu servir la versió de GitHub, per defecte l\'aplicació comprovarà si hi ha noves versions en format APK. Canvieu-ho per a inhabilitar les comprovacions automàtiques de GitHub.</string>
-    <string name="settings_support_summary">Uniu-vos a discussions de la comunitat i obteniu ajuda</string>
-    <string name="settings_support_title">Ajuda als usuaris</string>
+
     <string name="settings_scan_result">S\'està analitzant: s\'han comptat %1$d pistes</string>
     <string name="settings_image_size">Resolució de les imatges</string>
     <string name="settings_language">Llengua</string>
@@ -497,9 +496,7 @@
     <string name="track_info_transcoded_content_type">Tipus de contingut transcodificat</string>
     <string name="track_info_transcoded_suffix">Sufix de la transcodificació</string>
     <string name="track_info_year">Any</string>
-    <string name="undraw_page">unDraw</string>
-    <string name="undraw_thanks">Volem donar un agraïment especial a UnDraw; aquesta aplicació no seria tan bonica sense les seves il·lustracions.</string>
-    <string name="undraw_url">https://undraw.co/</string>
+
     <string name="widget_label">Giny de Tempus</string>
     <string name="widget_not_playing">No hi ha res en reproducció</string>
     <string name="widget_placeholder_subtitle">Obre Tempus</string>

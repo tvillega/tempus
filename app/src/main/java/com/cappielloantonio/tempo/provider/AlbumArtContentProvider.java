@@ -51,8 +51,17 @@ public class AlbumArtContentProvider extends ContentProvider {
     @Nullable
     @Override
     public ParcelFileDescriptor openFile(@NonNull Uri uri, @NonNull String mode) throws FileNotFoundException {
+        if (uriMatcher.match(uri) != 1) {
+            throw new FileNotFoundException("Unknown URI: " + uri);
+        }
+
         Context context = getContext();
         String albumId = uri.getLastPathSegment();
+
+        if (albumId == null || albumId.isEmpty() || albumId.contains("..") || albumId.contains("/")) {
+            throw new FileNotFoundException("Invalid album ID");
+        }
+
         Uri artworkUri = Uri.parse(CustomGlideRequest.createUrl(albumId, Preferences.getImageSize()));
 
         try {
