@@ -32,6 +32,7 @@ import com.cappielloantonio.tempo.subsonic.models.LyricsList;
 import com.cappielloantonio.tempo.subsonic.models.PlayQueue;
 import com.cappielloantonio.tempo.lastfm.LastFm;
 import com.cappielloantonio.tempo.lastfm.models.LastFmTrackResponse;
+import com.cappielloantonio.tempo.service.MediaManager;
 import com.cappielloantonio.tempo.util.Constants;
 import com.cappielloantonio.tempo.util.DownloadUtil;
 import com.cappielloantonio.tempo.util.MappingUtil;
@@ -114,6 +115,7 @@ public class PlayerBottomSheetViewModel extends AndroidViewModel {
         favoriteRepository.starLater(media.getId(), null, null, false);
         media.setStarred(null);
         liveMedia.postValue(media);
+        MediaManager.postFavoriteEvent(media.getId(), null);
     }
 
     private void removeFavoriteOnline(Child media) {
@@ -126,12 +128,14 @@ public class PlayerBottomSheetViewModel extends AndroidViewModel {
         });
         media.setStarred(null);
         liveMedia.postValue(media);
+        MediaManager.postFavoriteEvent(media.getId(), null);
     }
 
     private void setFavoriteOffline(Child media) {
         favoriteRepository.starLater(media.getId(), null, null, true);
         media.setStarred(new Date());
         liveMedia.postValue(media);
+        MediaManager.postFavoriteEvent(media.getId(), media.getStarred());
     }
 
     private void setFavoriteOnline(Context context, Child media) {
@@ -145,6 +149,7 @@ public class PlayerBottomSheetViewModel extends AndroidViewModel {
 
         media.setStarred(new Date());
         liveMedia.postValue(media);
+        MediaManager.postFavoriteEvent(media.getId(), media.getStarred());
 
         if (Preferences.isStarredSyncEnabled() && Preferences.getDownloadDirectoryUri() == null) {
             DownloadUtil.getDownloadTracker(context).download(

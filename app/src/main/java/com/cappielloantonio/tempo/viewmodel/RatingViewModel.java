@@ -9,6 +9,7 @@ import androidx.lifecycle.LiveData;
 import com.cappielloantonio.tempo.repository.AlbumRepository;
 import com.cappielloantonio.tempo.repository.ArtistRepository;
 import com.cappielloantonio.tempo.repository.SongRepository;
+import com.cappielloantonio.tempo.service.MediaManager;
 import com.cappielloantonio.tempo.subsonic.models.AlbumID3;
 import com.cappielloantonio.tempo.subsonic.models.ArtistID3;
 import com.cappielloantonio.tempo.subsonic.models.Child;
@@ -75,6 +76,8 @@ public class RatingViewModel extends AndroidViewModel {
     public void rate(int star) {
         if (song != null) {
             songRepository.setRating(song.getId(), star);
+            song.setUserRating(star);
+            MediaManager.postRatingEvent(song.getId(), star);
         } else if (album != null) {
             albumRepository.setRating(album.getId(), star);
         } else if (artist != null) {

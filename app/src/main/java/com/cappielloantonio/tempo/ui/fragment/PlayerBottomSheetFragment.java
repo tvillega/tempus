@@ -27,7 +27,10 @@ import com.cappielloantonio.tempo.databinding.FragmentPlayerBottomSheetBinding;
 import com.cappielloantonio.tempo.glide.CustomGlideRequest;
 import com.cappielloantonio.tempo.service.MediaManager;
 import com.cappielloantonio.tempo.service.MediaService;
+import com.cappielloantonio.tempo.subsonic.models.Child;
 import com.cappielloantonio.tempo.subsonic.models.PlayQueue;
+
+import java.util.Date;
 import com.cappielloantonio.tempo.ui.activity.MainActivity;
 import com.cappielloantonio.tempo.ui.fragment.pager.PlayerControllerVerticalPager;
 import com.cappielloantonio.tempo.util.Constants;
@@ -72,6 +75,16 @@ public class PlayerBottomSheetFragment extends Fragment {
             if (media != null && bind != null) {
                 bind.playerHeaderLayout.buttonFavoriteMini.setChecked(media.getStarred() != null);
                 bind.playerHeaderLayout.buttonFavoriteMini.setOnClickListener(v -> playerBottomSheetViewModel.setFavorite(requireContext(), media));
+            }
+        });
+
+        MediaManager.getFavoriteEvent().observe(getViewLifecycleOwner(), event -> {
+            if (event == null || bind == null) return;
+            String songId = (String) event[0];
+            Date starred = (Date) event[1];
+            Child media = playerBottomSheetViewModel.getLiveMedia().getValue();
+            if (media != null && media.getId().equals(songId)) {
+                bind.playerHeaderLayout.buttonFavoriteMini.setChecked(starred != null);
             }
         });
     }

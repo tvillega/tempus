@@ -129,6 +129,7 @@
             android:layout_height="wrap_content"
             android:isIndicator="false"
             android:numStars="5"
+            android:progressTint="?attr/colorOnSurface"
             android:rating="0"
             android:scaleX="0.8"
             android:scaleY="0.8"

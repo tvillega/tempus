@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.content.res.AppCompatResources;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.media3.session.MediaBrowser;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -31,6 +32,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -196,6 +198,32 @@ public class PlayerSongQueueAdapter extends RecyclerView.Adapter<PlayerSongQueue
 
     public void setMediaBrowserListenableFuture(ListenableFuture<MediaBrowser> mediaBrowserListenableFuture) {
         this.mediaBrowserListenableFuture = mediaBrowserListenableFuture;
+    }
+
+    public void observeMetadataEvents(LifecycleOwner owner) {
+        MediaManager.getFavoriteEvent().observe(owner, event -> {
+            if (event == null) return;
+            String songId = (String) event[0];
+            Date starred = (Date) event[1];
+            for (int i = 0; i < songs.size(); i++) {
+                if (songs.get(i).getId().equals(songId)) {
+                    songs.get(i).setStarred(starred);
+                    notifyItemChanged(i);
+                }
+            }
+        });
+
+        MediaManager.getRatingEvent().observe(owner, event -> {
+            if (event == null) return;
+            String songId = (String) event[0];
+            int rating = (Integer) event[1];
+            for (int i = 0; i < songs.size(); i++) {
+                if (songs.get(i).getId().equals(songId)) {
+                    songs.get(i).setUserRating(rating);
+                    notifyItemChanged(i);
+                }
+            }
+        });
     }
 
     public void setPlaybackState(String mediaId, boolean playing) {

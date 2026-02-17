@@ -94,6 +94,9 @@ open class BaseMediaService : MediaLibraryService() {
                 currentTrackScrobbled = true
                 MediaManager.scrobble(player.currentMediaItem, true, System.currentTimeMillis())
                 MediaManager.saveChronology(player.currentMediaItem)
+                player.currentMediaItem?.mediaMetadata?.extras?.getString("id")?.let {
+                    MediaManager.postScrobbleEvent(it)
+                }
             }
         }
     }

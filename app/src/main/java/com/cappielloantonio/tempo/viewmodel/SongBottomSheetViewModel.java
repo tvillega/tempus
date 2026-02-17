@@ -12,6 +12,7 @@ import androidx.media3.common.util.UnstableApi;
 
 import com.cappielloantonio.tempo.interfaces.MediaCallback;
 import com.cappielloantonio.tempo.interfaces.StarCallback;
+import com.cappielloantonio.tempo.service.MediaManager;
 import com.cappielloantonio.tempo.model.Download;
 import com.cappielloantonio.tempo.repository.AlbumRepository;
 import com.cappielloantonio.tempo.repository.ArtistRepository;
@@ -88,6 +89,7 @@ public class SongBottomSheetViewModel extends AndroidViewModel {
     private void removeFavoriteOffline(Child media) {
         favoriteRepository.starLater(media.getId(), null, null, false);
         media.setStarred(null);
+        MediaManager.postFavoriteEvent(media.getId(), null);
     }
 
     private void removeFavoriteOnline(Child media) {
@@ -100,11 +102,13 @@ public class SongBottomSheetViewModel extends AndroidViewModel {
         });
 
         media.setStarred(null);
+        MediaManager.postFavoriteEvent(media.getId(), null);
     }
 
     private void setFavoriteOffline(Child media) {
         favoriteRepository.starLater(media.getId(), null, null, true);
         media.setStarred(new Date());
+        MediaManager.postFavoriteEvent(media.getId(), media.getStarred());
     }
 
     private void setFavoriteOnline(Context context, Child media) {
@@ -117,6 +121,7 @@ public class SongBottomSheetViewModel extends AndroidViewModel {
         });
 
         media.setStarred(new Date());
+        MediaManager.postFavoriteEvent(media.getId(), media.getStarred());
 
         if (Preferences.isStarredSyncEnabled() && Preferences.getDownloadDirectoryUri() == null) {
             DownloadUtil.getDownloadTracker(context).download(

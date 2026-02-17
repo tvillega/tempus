@@ -65,6 +65,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -332,11 +333,41 @@ public class PlayerControllerFragment extends Fragment {
                     break;
                 case Constants.METADATA_PLAY_COUNT:
                     if (mediaMetadata.extras != null) {
-                        long playCount = mediaMetadata.extras.getLong("playCount", 0);
-                        if (playCount != 0) {
-                            TextView playCountView = createMetadataView(playCount + " plays", R.style.TitleSmall);
+                        String currentSongId = mediaMetadata.extras.getString("id");
+                        long basePlayCount = mediaMetadata.extras.getLong("playCount", 0);
+                        long effectivePlayCount = basePlayCount + MediaManager.getPlayCountIncrement(currentSongId);
+                        if (effectivePlayCount != 0) {
+                            TextView playCountView = createMetadataView(effectivePlayCount + " plays", R.style.TitleSmall);
                             playCountView.setTextColor(UIUtil.getThemeColor(requireContext(), com.google.android.material.R.attr.colorOnSurfaceVariant));
                             playerMetadataContainer.addView(playCountView);
+
+                            final long[] lastSeenVersion = {MediaManager.getScrobbleVersion()};
+                            MediaManager.getScrobbledSongId().observe(getViewLifecycleOwner(), scrobbledId -> {
+                                long currentVersion = MediaManager.getScrobbleVersion();
+                                if (currentVersion <= lastSeenVersion[0]) return;
+                                lastSeenVersion[0] = currentVersion;
+                                if (currentSongId != null && currentSongId.equals(scrobbledId)) {
+                                    long updated = basePlayCount + MediaManager.getPlayCountIncrement(currentSongId);
+                                    playCountView.setText(updated + " plays");
+                                }
+                            });
+                        } else {
+                            TextView playCountView = createMetadataView("", R.style.TitleSmall);
+                            playCountView.setTextColor(UIUtil.getThemeColor(requireContext(), com.google.android.material.R.attr.colorOnSurfaceVariant));
+                            playCountView.setVisibility(View.GONE);
+                            playerMetadataContainer.addView(playCountView);
+
+                            final long[] lastSeenVersion = {MediaManager.getScrobbleVersion()};
+                            MediaManager.getScrobbledSongId().observe(getViewLifecycleOwner(), scrobbledId -> {
+                                long currentVersion = MediaManager.getScrobbleVersion();
+                                if (currentVersion <= lastSeenVersion[0]) return;
+                                lastSeenVersion[0] = currentVersion;
+                                if (currentSongId != null && currentSongId.equals(scrobbledId)) {
+                                    long updated = basePlayCount + MediaManager.getPlayCountIncrement(currentSongId);
+                                    playCountView.setText(updated + " plays");
+                                    playCountView.setVisibility(View.VISIBLE);
+                                }
+                            });
                         }
                     }
                     break;
@@ -701,6 +732,7 @@ public class PlayerControllerFragment extends Fragment {
                         if (fromUser) {
                             ratingViewModel.rate((int) rating);
                             media.setUserRating((int) rating);
+                            MediaManager.postRatingEvent(media.getId(), (int) rating);
                         }
                     }
                 });
@@ -709,6 +741,34 @@ public class PlayerControllerFragment extends Fragment {
                 if (getActivity() != null) {
                     playerBottomSheetViewModel.refreshMediaInfo(requireActivity(), media);
                 }
+            }
+        });
+
+        MediaManager.getFavoriteEvent().observe(getViewLifecycleOwner(), event -> {
+            if (event == null) return;
+            String songId = (String) event[0];
+            Date starred = (Date) event[1];
+            Child media = playerBottomSheetViewModel.getLiveMedia().getValue();
+            if (media != null && media.getId().equals(songId)) {
+                buttonFavorite.setChecked(starred != null);
+            }
+        });
+
+        MediaManager.getRatingEvent().observe(getViewLifecycleOwner(), event -> {
+            if (event == null) return;
+            String songId = (String) event[0];
+            int rating = (Integer) event[1];
+            Child media = playerBottomSheetViewModel.getLiveMedia().getValue();
+            if (media != null && media.getId().equals(songId)) {
+                songRatingBar.setOnRatingBarChangeListener(null);
+                songRatingBar.setRating(rating);
+                songRatingBar.setOnRatingBarChangeListener((ratingBar, r, fromUser) -> {
+                    if (fromUser) {
+                        ratingViewModel.rate((int) r);
+                        media.setUserRating((int) r);
+                        MediaManager.postRatingEvent(media.getId(), (int) r);
+                    }
+                });
             }
         });
     }

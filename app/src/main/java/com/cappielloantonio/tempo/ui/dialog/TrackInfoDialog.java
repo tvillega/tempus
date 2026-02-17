@@ -11,6 +11,7 @@ import androidx.media3.common.MediaMetadata;
 import com.cappielloantonio.tempo.R;
 import com.cappielloantonio.tempo.databinding.DialogTrackInfoBinding;
 import com.cappielloantonio.tempo.glide.CustomGlideRequest;
+import com.cappielloantonio.tempo.service.MediaManager;
 import com.cappielloantonio.tempo.util.AssetLinkUtil;
 import com.cappielloantonio.tempo.util.Constants;
 import com.cappielloantonio.tempo.util.MusicUtil;
@@ -171,6 +172,9 @@ public class TrackInfoDialog extends DialogFragment {
             bind.bitDepthValueSector.setText(mediaMetadata.extras.getInt("bitDepth", 0) != 0 ? mediaMetadata.extras.getInt("bitDepth", 0) + " bits" : getString(R.string.label_placeholder));
             bind.pathValueSector.setText(mediaMetadata.extras.getString("path", getString(R.string.label_placeholder)));
             bind.discNumberValueSector.setText(mediaMetadata.extras.getInt("discNumber", 0) != 0 ? String.valueOf(mediaMetadata.extras.getInt("discNumber", 0)) : getString(R.string.label_placeholder));
+            String songId = mediaMetadata.extras.getString("id");
+            long playCount = mediaMetadata.extras.getLong("playCount", 0) + MediaManager.getPlayCountIncrement(songId);
+            bind.playCountValueSector.setText(playCount != 0 ? String.valueOf(playCount) : getString(R.string.label_placeholder));
 
             bindAssetLink(bind.titleValueSector, songLink);
             bindAssetLink(bind.albumValueSector, albumLink);

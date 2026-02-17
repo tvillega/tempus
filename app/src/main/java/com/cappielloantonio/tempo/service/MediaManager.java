@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.OptIn;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.Player;
@@ -36,11 +37,15 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 
 import java.lang.ref.WeakReference;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class MediaManager {
     private static final String TAG = "MediaManager";
@@ -49,6 +54,48 @@ public class MediaManager {
     private static int lastPlayNextInsertedIndex = -1;
 
     private static final ExecutorService backgroundExecutor = Executors.newSingleThreadExecutor();
+    private static final MutableLiveData<String> scrobbledSongId = new MutableLiveData<>();
+    private static final AtomicLong scrobbleVersion = new AtomicLong(0);
+    private static final Map<String, Integer> playCountIncrements = new ConcurrentHashMap<>();
+
+    public static LiveData<String> getScrobbledSongId() {
+        return scrobbledSongId;
+    }
+
+    public static long getScrobbleVersion() {
+        return scrobbleVersion.get();
+    }
+
+    public static int getPlayCountIncrement(String songId) {
+        if (songId == null) return 0;
+        return playCountIncrements.getOrDefault(songId, 0);
+    }
+
+    public static void postScrobbleEvent(String songId) {
+        scrobbleVersion.incrementAndGet();
+        playCountIncrements.merge(songId, 1, Integer::sum);
+        scrobbledSongId.postValue(songId);
+    }
+
+    private static final MutableLiveData<Object[]> favoriteEvent = new MutableLiveData<>();
+
+    public static LiveData<Object[]> getFavoriteEvent() {
+        return favoriteEvent;
+    }
+
+    public static void postFavoriteEvent(String songId, Date starred) {
+        favoriteEvent.postValue(new Object[]{songId, starred});
+    }
+
+    private static final MutableLiveData<Object[]> ratingEvent = new MutableLiveData<>();
+
+    public static LiveData<Object[]> getRatingEvent() {
+        return ratingEvent;
+    }
+
+    public static void postRatingEvent(String songId, int rating) {
+        ratingEvent.postValue(new Object[]{songId, rating});
+    }
 
     public static void registerPlaybackObserver(
             ListenableFuture<MediaBrowser> browserFuture,

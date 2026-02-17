@@ -20,6 +20,7 @@ import com.cappielloantonio.tempo.R;
 import com.cappielloantonio.tempo.databinding.ItemHorizontalTrackBinding;
 import com.cappielloantonio.tempo.glide.CustomGlideRequest;
 import com.cappielloantonio.tempo.interfaces.ClickCallback;
+import com.cappielloantonio.tempo.service.MediaManager;
 import com.cappielloantonio.tempo.subsonic.models.AlbumID3;
 import com.cappielloantonio.tempo.subsonic.models.Child;
 import com.cappielloantonio.tempo.subsonic.models.DiscTitle;
@@ -34,6 +35,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -104,6 +106,48 @@ public class SongHorizontalAdapter extends RecyclerView.Adapter<SongHorizontalAd
 
         if (lifecycleOwner != null) {
             MappingUtil.observeExternalAudioRefresh(lifecycleOwner, this::handleExternalAudioRefresh);
+
+            MediaManager.getFavoriteEvent().observe(lifecycleOwner, event -> {
+                if (event == null) return;
+                String songId = (String) event[0];
+                Date starred = (Date) event[1];
+                updateFavoriteInList(songId, starred);
+            });
+
+            MediaManager.getRatingEvent().observe(lifecycleOwner, event -> {
+                if (event == null) return;
+                String songId = (String) event[0];
+                int rating = (Integer) event[1];
+                updateRatingInList(songId, rating);
+            });
+        }
+    }
+
+    private void updateFavoriteInList(String songId, Date starred) {
+        for (int i = 0; i < songs.size(); i++) {
+            if (songs.get(i).getId().equals(songId)) {
+                songs.get(i).setStarred(starred);
+                notifyItemChanged(i);
+            }
+        }
+        for (Child c : songsFull) {
+            if (c.getId().equals(songId)) {
+                c.setStarred(starred);
+            }
+        }
+    }
+
+    private void updateRatingInList(String songId, int rating) {
+        for (int i = 0; i < songs.size(); i++) {
+            if (songs.get(i).getId().equals(songId)) {
+                songs.get(i).setUserRating(rating);
+                notifyItemChanged(i);
+            }
+        }
+        for (Child c : songsFull) {
+            if (c.getId().equals(songId)) {
+                c.setUserRating(rating);
+            }
         }
     }
 
