@@ -1,8 +1,8 @@
 package com.cappielloantonio.tempo.ui.adapter;
 
 import android.app.Activity;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,12 +14,14 @@ import androidx.appcompat.content.res.AppCompatResources;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.media3.common.util.UnstableApi;
 import androidx.media3.session.MediaBrowser;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.cappielloantonio.tempo.R;
 import com.cappielloantonio.tempo.databinding.ItemHorizontalTrackBinding;
 import com.cappielloantonio.tempo.glide.CustomGlideRequest;
 import com.cappielloantonio.tempo.interfaces.ClickCallback;
+import com.cappielloantonio.tempo.service.DownloaderManager;
 import com.cappielloantonio.tempo.service.MediaManager;
 import com.cappielloantonio.tempo.subsonic.models.AlbumID3;
 import com.cappielloantonio.tempo.subsonic.models.Child;
@@ -57,6 +59,10 @@ public class SongHorizontalAdapter extends RecyclerView.Adapter<SongHorizontalAd
     private List<Integer> currentPlayingPositions = Collections.emptyList();
     private ListenableFuture<MediaBrowser> mediaBrowserListenableFuture;
 
+    private Drawable starDrawable;
+    private Drawable starOutlinedDrawable;
+    private DownloaderManager downloadTracker;
+
     private final Filter filtering = new Filter() {
         @Override
         protected FilterResults performFiltering(CharSequence constraint) {
@@ -83,8 +89,10 @@ public class SongHorizontalAdapter extends RecyclerView.Adapter<SongHorizontalAd
 
         @Override
         protected void publishResults(CharSequence constraint, FilterResults results) {
-            songs = (List<Child>) results.values;
-            notifyDataSetChanged();
+            List<Child> newSongs = (List<Child>) results.values;
+            DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new SongDiffCallback(songs, newSongs));
+            songs = newSongs;
+            diffResult.dispatchUpdatesTo(SongHorizontalAdapter.this);
 
             for (int pos : currentPlayingPositions) {
                 if (pos >= 0 && pos < songs.size()) {
@@ -154,6 +162,11 @@ public class SongHorizontalAdapter extends RecyclerView.Adapter<SongHorizontalAd
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        if (starDrawable == null) {
+            starDrawable = AppCompatResources.getDrawable(parent.getContext(), R.drawable.ic_star);
+            starOutlinedDrawable = AppCompatResources.getDrawable(parent.getContext(), R.drawable.ic_star_outlined);
+            downloadTracker = DownloadUtil.getDownloadTracker(parent.getContext());
+        }
         ItemHorizontalTrackBinding view = ItemHorizontalTrackBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
         return new ViewHolder(view);
     }
@@ -187,7 +200,7 @@ public class SongHorizontalAdapter extends RecyclerView.Adapter<SongHorizontalAd
         holder.item.trackNumberTextView.setText(MusicUtil.getReadableTrackNumber(holder.itemView.getContext(), song.getTrack()));
 
         if (Preferences.getDownloadDirectoryUri() == null) {
-            if (DownloadUtil.getDownloadTracker(holder.itemView.getContext()).isDownloaded(song.getId())) {
+            if (downloadTracker != null && downloadTracker.isDownloaded(song.getId())) {
                 holder.item.searchResultDownloadIndicatorImageView.setVisibility(View.VISIBLE);
             } else {
                 holder.item.searchResultDownloadIndicatorImageView.setVisibility(View.GONE);
@@ -242,11 +255,12 @@ public class SongHorizontalAdapter extends RecyclerView.Adapter<SongHorizontalAd
             holder.item.ratingBarLayout.setVisibility(song.getUserRating() != null && song.getUserRating() > 0 ? View.VISIBLE : View.GONE);
 
             if (song.getUserRating() != null && song.getUserRating() > 0) {
-                holder.item.oneStarIcon.setImageDrawable(AppCompatResources.getDrawable(holder.itemView.getContext(), song.getUserRating() >= 1 ? R.drawable.ic_star : R.drawable.ic_star_outlined));
-                holder.item.twoStarIcon.setImageDrawable(AppCompatResources.getDrawable(holder.itemView.getContext(), song.getUserRating() >= 2 ? R.drawable.ic_star : R.drawable.ic_star_outlined));
-                holder.item.threeStarIcon.setImageDrawable(AppCompatResources.getDrawable(holder.itemView.getContext(), song.getUserRating() >= 3 ? R.drawable.ic_star : R.drawable.ic_star_outlined));
-                holder.item.fourStarIcon.setImageDrawable(AppCompatResources.getDrawable(holder.itemView.getContext(), song.getUserRating() >= 4 ? R.drawable.ic_star : R.drawable.ic_star_outlined));
-                holder.item.fiveStarIcon.setImageDrawable(AppCompatResources.getDrawable(holder.itemView.getContext(), song.getUserRating() >= 5 ? R.drawable.ic_star : R.drawable.ic_star_outlined));
+                int rating = song.getUserRating();
+                holder.item.oneStarIcon.setImageDrawable(rating >= 1 ? starDrawable : starOutlinedDrawable);
+                holder.item.twoStarIcon.setImageDrawable(rating >= 2 ? starDrawable : starOutlinedDrawable);
+                holder.item.threeStarIcon.setImageDrawable(rating >= 3 ? starDrawable : starOutlinedDrawable);
+                holder.item.fourStarIcon.setImageDrawable(rating >= 4 ? starDrawable : starOutlinedDrawable);
+                holder.item.fiveStarIcon.setImageDrawable(rating >= 5 ? starDrawable : starOutlinedDrawable);
             }
         }
 
@@ -292,12 +306,6 @@ public class SongHorizontalAdapter extends RecyclerView.Adapter<SongHorizontalAd
     public void setItems(List<Child> songs) {
         this.songsFull = songs != null ? songs : Collections.emptyList();
         filtering.filter(currentFilter);
-        notifyDataSetChanged();
-    }
-
-    @Override
-    public int getItemViewType(int position) {
-        return position;
     }
 
     @Override
@@ -380,17 +388,15 @@ public class SongHorizontalAdapter extends RecyclerView.Adapter<SongHorizontalAd
             bundle.putInt(Constants.ITEM_POSITION, MusicUtil.getPlayableMediaPosition(songs, getBindingAdapterPosition()));
 
             if (tappedSong.getId().equals(currentPlayingId)) {
-                Log.i("SongHorizontalAdapter", "Tapping on currently playing song, toggling playback");
-                try{
+                try {
                     MediaBrowser mediaBrowser = mediaBrowserListenableFuture.get();
-                    Log.i("SongHorizontalAdapter", "MediaBrowser retrieved, isPlaying: " + isPlaying);
                     if (isPlaying) {
                         mediaBrowser.pause();
                     } else {
                         mediaBrowser.play();
                     }
                 } catch (ExecutionException | InterruptedException e) {
-                    Log.e("SongHorizontalAdapter", "Error getting MediaBrowser", e);
+                    Thread.currentThread().interrupt();
                 }
             } else {
                 click.onMediaClick(bundle);
@@ -409,31 +415,66 @@ public class SongHorizontalAdapter extends RecyclerView.Adapter<SongHorizontalAd
     }
 
     public void sort(String order) {
+        List<Child> sorted = new ArrayList<>(songs);
         switch (order) {
             case Constants.MEDIA_BY_TITLE:
-                songs.sort(Comparator.comparing(Child::getTitle, String.CASE_INSENSITIVE_ORDER));
+                sorted.sort(Comparator.comparing(Child::getTitle, String.CASE_INSENSITIVE_ORDER));
                 break;
             case Constants.MEDIA_BY_ARTIST:
-                songs.sort(Comparator.comparing(
+                sorted.sort(Comparator.comparing(
                         song -> song.getArtist() != null ? song.getArtist().split("[,/;&\u2022]")[0].trim() : "",
                         String.CASE_INSENSITIVE_ORDER
                 ));
                 break;
             case Constants.MEDIA_DEFAULT_ORDER:
-                songs = new ArrayList<>(songsFull);
+                sorted = new ArrayList<>(songsFull);
                 break;
             case Constants.MEDIA_MOST_RECENTLY_STARRED:
-                songs.sort(Comparator.comparing(Child::getStarred, Comparator.nullsLast(Comparator.reverseOrder())));
+                sorted.sort(Comparator.comparing(Child::getStarred, Comparator.nullsLast(Comparator.reverseOrder())));
                 break;
             case Constants.MEDIA_LEAST_RECENTLY_STARRED:
-                songs.sort(Comparator.comparing(Child::getStarred, Comparator.nullsLast(Comparator.naturalOrder())));
+                sorted.sort(Comparator.comparing(Child::getStarred, Comparator.nullsLast(Comparator.naturalOrder())));
                 break;
         }
 
-        notifyDataSetChanged();
+        DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new SongDiffCallback(songs, sorted));
+        songs = sorted;
+        diffResult.dispatchUpdatesTo(this);
     }
 
     public void setMediaBrowserListenableFuture(ListenableFuture<MediaBrowser> mediaBrowserListenableFuture) {
         this.mediaBrowserListenableFuture = mediaBrowserListenableFuture;
+    }
+
+    private static class SongDiffCallback extends DiffUtil.Callback {
+        private final List<Child> oldList;
+        private final List<Child> newList;
+
+        SongDiffCallback(List<Child> oldList, List<Child> newList) {
+            this.oldList = oldList;
+            this.newList = newList;
+        }
+
+        @Override
+        public int getOldListSize() { return oldList.size(); }
+
+        @Override
+        public int getNewListSize() { return newList.size(); }
+
+        @Override
+        public boolean areItemsTheSame(int oldPos, int newPos) {
+            return oldList.get(oldPos).getId().equals(newList.get(newPos).getId());
+        }
+
+        @Override
+        public boolean areContentsTheSame(int oldPos, int newPos) {
+            Child o = oldList.get(oldPos);
+            Child n = newList.get(newPos);
+            return Objects.equals(o.getStarred(), n.getStarred())
+                    && Objects.equals(o.getUserRating(), n.getUserRating())
+                    && Objects.equals(o.getTitle(), n.getTitle())
+                    && Objects.equals(o.getArtist(), n.getArtist())
+                    && Objects.equals(o.getAlbum(), n.getAlbum());
+        }
     }
 }
