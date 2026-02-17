@@ -6,10 +6,14 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.MutableLiveData;
 
 import com.cappielloantonio.tempo.App;
+import com.cappielloantonio.tempo.database.AppDatabase;
+import com.cappielloantonio.tempo.database.dao.ScrobbleDao;
+import com.cappielloantonio.tempo.model.Scrobble;
 import com.cappielloantonio.tempo.subsonic.base.ApiResponse;
 import com.cappielloantonio.tempo.subsonic.models.Child;
 import com.cappielloantonio.tempo.subsonic.models.SubsonicResponse;
 import com.cappielloantonio.tempo.util.Constants.SeedType;
+import com.cappielloantonio.tempo.util.Preferences;
 
 import com.cappielloantonio.tempo.subsonic.api.navidrome.NavidromeClient;
 
@@ -28,6 +32,7 @@ import retrofit2.Response;
 public class SongRepository {
 
     private static final String TAG = "SongRepository";
+    private final ScrobbleDao scrobbleDao = AppDatabase.getInstance().scrobbleDao();
 
     public interface MediaCallbackInternal {
         void onSongsAvailable(List<Child> songs);
@@ -348,10 +353,61 @@ public class SongRepository {
     }
 
     public void scrobble(String id, boolean submission) {
-        App.getSubsonicClientInstance(false).getMediaAnnotationClient().scrobble(id, submission).enqueue(new Callback<ApiResponse>() {
-            @Override public void onResponse(@NonNull Call<ApiResponse> call, @NonNull Response<ApiResponse> response) {}
-            @Override public void onFailure(@NonNull Call<ApiResponse> call, @NonNull Throwable t) {}
+        scrobble(id, submission, null);
+    }
+
+    public void scrobble(String id, boolean submission, Long time) {
+        String server = Preferences.getServerId();
+        long scrobbleTime = time != null ? time : System.currentTimeMillis();
+
+        App.getSubsonicClientInstance(false).getMediaAnnotationClient().scrobble(id, submission, time).enqueue(new Callback<ApiResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<ApiResponse> call, @NonNull Response<ApiResponse> response) {
+                if (!response.isSuccessful()) {
+                    saveScrobbleLocally(id, submission, scrobbleTime, server);
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<ApiResponse> call, @NonNull Throwable t) {
+                saveScrobbleLocally(id, submission, scrobbleTime, server);
+            }
         });
+    }
+
+    private void saveScrobbleLocally(String id, boolean submission, long time, String server) {
+        if (server == null) return;
+        new Thread(() -> {
+            scrobbleDao.insert(new Scrobble(0, id, time, submission, server));
+        }).start();
+    }
+
+    public void submitPendingScrobbles() {
+        String server = Preferences.getServerId();
+        if (server == null) return;
+
+        new Thread(() -> {
+            List<Scrobble> pending = scrobbleDao.getPendingScrobbles(server);
+            if (pending.isEmpty()) return;
+
+            for (Scrobble scrobble : pending) {
+                App.getSubsonicClientInstance(false).getMediaAnnotationClient()
+                        .scrobble(scrobble.getId(), scrobble.getSubmission(), scrobble.getTimestamp())
+                        .enqueue(new Callback<ApiResponse>() {
+                            @Override
+                            public void onResponse(@NonNull Call<ApiResponse> call, @NonNull Response<ApiResponse> response) {
+                                if (response.isSuccessful()) {
+                                    new Thread(() -> scrobbleDao.delete(scrobble)).start();
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(@NonNull Call<ApiResponse> call, @NonNull Throwable t) {
+                                // Will retry on next sync
+                            }
+                        });
+            }
+        }).start();
     }
 
     public void setRating(String id, int rating) {

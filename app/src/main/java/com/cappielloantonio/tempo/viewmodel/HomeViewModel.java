@@ -20,6 +20,7 @@ import com.cappielloantonio.tempo.repository.FavoriteRepository;
 import com.cappielloantonio.tempo.repository.PlaylistRepository;
 import com.cappielloantonio.tempo.repository.SharingRepository;
 import com.cappielloantonio.tempo.repository.SongRepository;
+import com.cappielloantonio.tempo.service.MediaManager;
 import com.cappielloantonio.tempo.subsonic.models.AlbumID3;
 import com.cappielloantonio.tempo.subsonic.models.ArtistID3;
 import com.cappielloantonio.tempo.subsonic.models.Child;
@@ -456,6 +457,7 @@ public class HomeViewModel extends AndroidViewModel {
     }
 
     public void setOfflineFavorite() {
+        MediaManager.submitPendingScrobbles();
         ArrayList<Favorite> favorites = getFavorites();
         ArrayList<Favorite> favoritesToSave = getFavoritesToSave(favorites);
         ArrayList<Favorite> favoritesToDelete = getFavoritesToDelete(favorites, favoritesToSave);

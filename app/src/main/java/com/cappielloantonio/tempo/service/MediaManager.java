@@ -467,9 +467,17 @@ public class MediaManager {
     }
 
     public static void scrobble(MediaItem mediaItem, boolean submission) {
+        scrobble(mediaItem, submission, null);
+    }
+
+    public static void scrobble(MediaItem mediaItem, boolean submission, Long time) {
         if (mediaItem != null && Preferences.isScrobblingEnabled()) {
-            getSongRepository().scrobble(mediaItem.mediaMetadata.extras.getString("id"), submission);
+            getSongRepository().scrobble(mediaItem.mediaMetadata.extras.getString("id"), submission, time);
         }
+    }
+
+    public static void submitPendingScrobbles() {
+        getSongRepository().submitPendingScrobbles();
     }
 
     @OptIn(markerClass = UnstableApi.class)

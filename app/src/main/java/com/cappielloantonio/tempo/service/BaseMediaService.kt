@@ -92,7 +92,7 @@ open class BaseMediaService : MediaLibraryService() {
             val threshold = Preferences.getScrobbleThreshold()
             if (position * 100 / duration >= threshold) {
                 currentTrackScrobbled = true
-                MediaManager.scrobble(player.currentMediaItem, true)
+                MediaManager.scrobble(player.currentMediaItem, true, System.currentTimeMillis())
                 MediaManager.saveChronology(player.currentMediaItem)
             }
         }
@@ -342,7 +342,7 @@ open class BaseMediaService : MediaLibraryService() {
                     !currentTrackScrobbled
                 ) {
                     currentTrackScrobbled = true
-                    MediaManager.scrobble(player.currentMediaItem, true)
+                    MediaManager.scrobble(player.currentMediaItem, true, System.currentTimeMillis())
                     MediaManager.saveChronology(player.currentMediaItem)
                 }
                 updateWidget(player)
@@ -359,7 +359,7 @@ open class BaseMediaService : MediaLibraryService() {
                 if (reason == Player.DISCONTINUITY_REASON_AUTO_TRANSITION) {
                     if (oldPosition.mediaItem?.mediaMetadata?.extras?.getString("type") == Constants.MEDIA_TYPE_MUSIC && !currentTrackScrobbled) {
                         currentTrackScrobbled = true
-                        MediaManager.scrobble(oldPosition.mediaItem, true)
+                        MediaManager.scrobble(oldPosition.mediaItem, true, System.currentTimeMillis())
                         MediaManager.saveChronology(oldPosition.mediaItem)
                     }
 
