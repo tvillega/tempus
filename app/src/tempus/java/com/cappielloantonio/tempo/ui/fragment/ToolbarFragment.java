@@ -16,6 +16,7 @@ import androidx.media3.common.util.UnstableApi;
 import com.cappielloantonio.tempo.R;
 import com.cappielloantonio.tempo.databinding.FragmentToolbarBinding;
 import com.cappielloantonio.tempo.ui.activity.MainActivity;
+import com.cappielloantonio.tempo.util.Preferences;
 import com.google.android.gms.cast.framework.CastButtonFactory;
 
 @UnstableApi
@@ -49,6 +50,8 @@ public class ToolbarFragment extends Fragment {
         bind = FragmentToolbarBinding.inflate(inflater, container, false);
         View view = bind.getRoot();
 
+        checkWakmanMode();
+
         return view;
     }
 
@@ -64,4 +67,13 @@ public class ToolbarFragment extends Fragment {
 
         return false;
     }
-}
+
+    private void checkWakmanMode() {
+        if (Preferences.getWalkmanMode()) {
+            bind.toolbarBrandText.setVisibility(View.GONE);
+        } else {
+            bind.toolbarBrandText.setVisibility(View.VISIBLE);
+        }
+    }
+
+    }
