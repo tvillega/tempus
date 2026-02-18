@@ -722,15 +722,10 @@ public class PlayerControllerFragment extends Fragment {
         if (Preferences.getWalkmanMode()) {
             Context ctx = activity.getBaseContext();
 
-//            bind.getRoot().findViewById(R.id.player_media_title_label).setScaleX(0.85f);
-//            bind.getRoot().findViewById(R.id.player_media_title_label).setScaleY(0.85f);
-
-//            bind.getRoot().findViewById(R.id.exo_play_pause).setScaleX(0.85f);
-//            bind.getRoot().findViewById(R.id.exo_play_pause).setScaleY(0.85f);
-
             // Swipe gesture keeps working, trade off is to lose the equalizator
             bind.getRoot().findViewById(R.id.player_quick_action_view).setVisibility(View.GONE);
 
+            // Progress bar
             UIUtil.setMarginsInDp(
                     bind.getRoot().findViewById(R.id.exo_progress),
                     10f,
