@@ -26,6 +26,7 @@
 
             <TextView
                 style="@style/HeadlineMedium"
+                android:id="@+id/toolbar_brand_text"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingStart="8dp"
