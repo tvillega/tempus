@@ -7,6 +7,7 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.text.TextUtils;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -48,6 +49,7 @@ import com.cappielloantonio.tempo.util.AssetLinkUtil;
 import com.cappielloantonio.tempo.util.Constants;
 import com.cappielloantonio.tempo.util.MusicUtil;
 import com.cappielloantonio.tempo.util.Preferences;
+import com.cappielloantonio.tempo.util.UIUtil;
 import com.cappielloantonio.tempo.viewmodel.PlayerBottomSheetViewModel;
 import com.cappielloantonio.tempo.viewmodel.RatingViewModel;
 import com.google.android.material.chip.Chip;
@@ -110,6 +112,8 @@ public class PlayerControllerFragment extends Fragment {
         initMediaLabelButton();
         initArtistLabelButton();
         initEqualizerButton();
+
+        checkWalkmanMode();
 
         return view;
     }
@@ -712,6 +716,49 @@ public class PlayerControllerFragment extends Fragment {
             return true;
         }
         return false;
+    }
+
+    private void checkWalkmanMode() {
+        if (Preferences.getWalkmanMode()) {
+            Context ctx = activity.getBaseContext();
+
+//            bind.getRoot().findViewById(R.id.player_media_title_label).setScaleX(0.85f);
+//            bind.getRoot().findViewById(R.id.player_media_title_label).setScaleY(0.85f);
+
+//            bind.getRoot().findViewById(R.id.exo_play_pause).setScaleX(0.85f);
+//            bind.getRoot().findViewById(R.id.exo_play_pause).setScaleY(0.85f);
+
+            // Swipe gesture keeps working, trade off is to lose the equalizator
+            bind.getRoot().findViewById(R.id.player_quick_action_view).setVisibility(View.GONE);
+
+            UIUtil.setMarginsInDp(
+                    bind.getRoot().findViewById(R.id.exo_progress),
+                    10f,
+                    -1f,
+                    10f,
+                    -1f
+            );
+
+            // Song name
+            UIUtil.setMarginsInDp(
+                    bind.getRoot().findViewById(R.id.player_media_title_label),
+                    19f, // 10 is a safe value
+                    -1f,
+                    -1f,
+                    -1f
+            );
+
+            // Artist name
+            UIUtil.setMarginsInDp(
+                    bind.getRoot().findViewById(R.id.player_artist_name_label),
+                    19f, // 26 is a safe value
+                    -1f,
+                    -1f,
+                    -1f
+            );
+
+        }
+
     }
 
     @Override
