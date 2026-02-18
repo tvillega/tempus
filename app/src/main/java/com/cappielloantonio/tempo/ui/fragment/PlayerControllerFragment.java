@@ -331,6 +331,12 @@ public class PlayerControllerFragment extends Fragment {
 
         }
 
+        Boolean isWalkmanMode = checkWalkmanModeMediaInfo(mediaMetadata);
+        if (isWalkmanMode) {
+            playerTrackInfo.setVisibility(View.GONE);
+            return;
+        }
+
         playerTrackInfo.setOnClickListener(view -> {
             TrackInfoDialog dialog = new TrackInfoDialog(mediaMetadata);
             dialog.show(activity.getSupportFragmentManager(), null);
@@ -692,6 +698,20 @@ public class PlayerControllerFragment extends Fragment {
                 }
             }
         }
+    }
+
+    private Boolean checkWalkmanModeMediaInfo(MediaMetadata mediaMetadata) {
+        if (Preferences.getWalkmanMode()) {
+            playerMediaBitrate.setVisibility(View.GONE);
+            Chip chip = activity.findViewById(R.id.player_media_extension);
+            chip.setClickable(true);
+            chip.setOnClickListener(view -> {
+                TrackInfoDialog dialog = new TrackInfoDialog(mediaMetadata);
+                dialog.show(activity.getSupportFragmentManager(), null);
+            });
+            return true;
+        }
+        return false;
     }
 
     @Override
