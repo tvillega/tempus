@@ -4,6 +4,9 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.InsetDrawable;
+import android.util.DisplayMetrics;
+import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.core.os.LocaleListCompat;
 import androidx.recyclerview.widget.DividerItemDecoration;
@@ -110,6 +113,48 @@ public class UIUtil {
         }
         SimpleDateFormat formatter = new SimpleDateFormat("dd MMM, yyyy", Locale.getDefault());
         return formatter.format(date);
+    }
+
+    public static void setSizeInDp(View view, float widthDp, float heightDp) {
+        Context ctx = view.getContext();
+        DisplayMetrics dm = ctx.getResources().getDisplayMetrics();
+        float density = dm.density;
+
+        ViewGroup.LayoutParams params = view.getLayoutParams();
+        params.width  = (widthDp == 0f) ? params.width : (int) (widthDp * density + 0.5f);
+        params.height = (heightDp == 0f) ? params.height : (int) (heightDp * density + 0.5f);
+        view.setLayoutParams(params);
+    }
+
+    public static void setMarginsInDp(
+            View view,
+            float startDp,
+            float topDp,
+            float endDp,
+            float bottomDp) {
+
+        Context ctx = view.getContext();
+        DisplayMetrics dm = ctx.getResources().getDisplayMetrics();
+        float density = dm.density;
+
+        ViewGroup.MarginLayoutParams params =
+                (ViewGroup.MarginLayoutParams) view.getLayoutParams();
+
+        params.setMarginStart(
+                (startDp == -1f) ? params.getMarginStart()
+                        : (int) (startDp * density + 0.5f));
+
+        params.topMargin = (topDp == -1f) ? params.topMargin
+                : (int) (topDp * density + 0.5f);
+
+        params.setMarginEnd(
+                (endDp == -1f) ? params.getMarginEnd()
+                        : (int) (endDp * density + 0.5f));
+
+        params.bottomMargin = (bottomDp == -1f) ? params.bottomMargin
+                : (int) (bottomDp * density + 0.5f);
+
+        view.setLayoutParams(params);
     }
 
 }
