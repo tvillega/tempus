@@ -55,6 +55,16 @@
             android:key="always_on_display" />
 
         <SwitchPreference
+            android:title="@string/settings_walkman_mode_title"
+            android:defaultValue="false"
+            android:key="walkman_mode"
+            android:summary=""/>
+
+        <Preference
+            app:selectable="false"
+            app:summary="@string/settings_summary_walkman_mode" />
+
+        <SwitchPreference
             android:layout_height="match_parent"
             android:defaultValue="true"
             android:key="rounded_corner"

@@ -30,6 +30,7 @@ object Preferences {
     private const val IMAGE_CACHE_SIZE = "image_cache_size"
     private const val STREAMING_CACHE_SIZE = "streaming_cache_size"
     private const val LANDSCAPE_ITEMS_PER_ROW = "landscape_items_per_row"
+    private const val WALKMAN_MODE = "walkman_mode"
     private const val IMAGE_SIZE = "image_size"
     private const val MAX_BITRATE_WIFI = "max_bitrate_wifi"
     private const val MAX_BITRATE_MOBILE = "max_bitrate_mobile"
@@ -308,6 +309,11 @@ object Preferences {
     @JvmStatic
     fun getLandscapeItemsPerRow(): Int {
         return App.getInstance().preferences.getString(LANDSCAPE_ITEMS_PER_ROW, "4")!!.toInt()
+    }
+
+    @JvmStatic
+    fun getWalkmanMode(): Boolean {
+        return App.getInstance().preferences.getBoolean(WALKMAN_MODE, false)
     }
 
     @JvmStatic
