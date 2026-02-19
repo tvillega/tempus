@@ -20,6 +20,8 @@ import android.view.WindowManager;
 import androidx.annotation.NonNull;
 import androidx.core.splashscreen.SplashScreen;
 import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.media3.common.MediaItem;
@@ -117,6 +119,7 @@ public class MainActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
         pingServer();
+        checkWalkmanMode();
     }
 
     @Override
@@ -578,15 +581,24 @@ public class MainActivity extends BaseActivity {
 
     private void checkWalkmanMode() {
 
-        if (Preferences.getWalkmanMode()) {
-            getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
-            WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
-        } else {
-            getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
-            WindowCompat.setDecorFitsSystemWindows(getWindow(), true);
-        }
+        WindowInsetsControllerCompat insetsController;
+        View decorView = getWindow().getDecorView();
+        insetsController = new WindowInsetsControllerCompat(getWindow(), decorView);
 
+        if (Preferences.getWalkmanMode()) {
+            WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+            insetsController.hide(WindowInsetsCompat.Type.navigationBars());
+            insetsController.hide(WindowInsetsCompat.Type.statusBars());
+            insetsController.setSystemBarsBehavior(
+                    WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+
+        } else {
+            WindowCompat.setDecorFitsSystemWindows(getWindow(), true);
+            insetsController.show(WindowInsetsCompat.Type.navigationBars());
+            insetsController.show(WindowInsetsCompat.Type.statusBars());
+            insetsController.setSystemBarsBehavior(
+                    WindowInsetsControllerCompat.BEHAVIOR_DEFAULT);
+
+        }
     }
 }
