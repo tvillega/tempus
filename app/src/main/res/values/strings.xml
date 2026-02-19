@@ -567,6 +567,6 @@
 
     <string name="search_sort_title">Sort recent searches chronologically</string>
     <string name="search_sort_summary">If enabled, sort searches chronologically. Sort by name if disabled.</string>
-    <string name="settings_summary_walkman_mode">Enhances UI usability on small screens like DAPs. Leave the app for changes to take effect.</string>
+    <string name="settings_walkman_mode_summary">Enhances usability on devices with small screen like Android DAP. The changes will take effect on restart.</string>
     <string name="settings_walkman_mode_title">Walkman mode</string>
 </resources>
