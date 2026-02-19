@@ -760,6 +760,7 @@ public class PlayerControllerFragment extends Fragment {
     public void onResume() {
         super.onResume();
         bindMediaService();
+        checkWalkmanMode();
     }
 
     @Override
