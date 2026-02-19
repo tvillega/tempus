@@ -57,8 +57,7 @@
         <SwitchPreference
             android:title="@string/settings_walkman_mode_title"
             android:defaultValue="false"
-            android:key="walkman_mode"
-            android:summary=""/>
+            android:key="walkman_mode"/>
 
         <Preference
             app:selectable="false"
