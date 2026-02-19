@@ -17,6 +17,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.media3.common.util.UnstableApi;
@@ -105,6 +106,16 @@ public class HomeTabMusicFragment extends Fragment implements ClickCallback {
     private ShareHorizontalAdapter shareHorizontalAdapter;
 
     private ListenableFuture<MediaBrowser> mediaBrowserListenableFuture;
+    private final Handler scrobbleRefreshHandler = new Handler(Looper.getMainLooper());
+    private final Runnable refreshRecentlyPlayedAlbumsRunnable = () -> {
+        if (homeViewModel == null || homeViewModel.checkHomeSectorVisibility(Constants.HOME_SECTOR_LAST_PLAYED)) {
+            return;
+        }
+        LifecycleOwner owner = getViewLifecycleOwnerLiveData().getValue();
+        if (owner != null) {
+            homeViewModel.refreshRecentlyPlayedAlbumList(owner);
+        }
+    };
 
     @Nullable
     @Override
@@ -132,6 +143,7 @@ public class HomeTabMusicFragment extends Fragment implements ClickCallback {
         initHomeReorganizer();
 
         reorder();
+        observeScrobbleEvents();
     }
 
     private void initHistoryView() {
@@ -278,6 +290,8 @@ public class HomeTabMusicFragment extends Fragment implements ClickCallback {
         if (starredSongAdapter != null) setStarredSongsMediaBrowserListenableFuture();
         if (historyAdapter != null) setHistoryMediaBrowserListenableFuture();
         if (topPlayedSongAdapter != null) setTopPlayedSongsMediaBrowserListenableFuture();
+        scrobbleRefreshHandler.removeCallbacks(refreshRecentlyPlayedAlbumsRunnable);
+        scrobbleRefreshHandler.postDelayed(refreshRecentlyPlayedAlbumsRunnable, 100);
     }
 
     @Override
@@ -289,6 +303,7 @@ public class HomeTabMusicFragment extends Fragment implements ClickCallback {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        scrobbleRefreshHandler.removeCallbacks(refreshRecentlyPlayedAlbumsRunnable);
         bind = null;
 
         discoverSongAdapter = null;
@@ -310,6 +325,16 @@ public class HomeTabMusicFragment extends Fragment implements ClickCallback {
         recentlyPlayedArtistAdapter = null;
         topPlayedArtistAdapter = null;
         topPlayedSongAdapter = null;
+    }
+
+    private void observeScrobbleEvents() {
+        MediaManager.getScrobbledSongId().observe(getViewLifecycleOwner(), scrobbledId -> {
+            if (scrobbledId == null || scrobbledId.isEmpty()) {
+                return;
+            }
+            scrobbleRefreshHandler.removeCallbacks(refreshRecentlyPlayedAlbumsRunnable);
+            scrobbleRefreshHandler.postDelayed(refreshRecentlyPlayedAlbumsRunnable, 400);
+        });
     }
 
     private void init() {
