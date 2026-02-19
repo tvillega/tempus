@@ -452,7 +452,7 @@
     <string name="settings_title_transcoding_download">转码下载</string>
     <string name="settings_title_ui">界面</string>
     <string name="settings_transcoded_download">转码下载</string>
-    <string name="settings_version_summary" translatable="false">0.1.1</string>
+    <string name="settings_version_summary" translatable="false">0.1.2</string>
     <string name="settings_version_title">版本</string>
     <string name="settings_wifi_only_summary">在通过移动网络进行流式传输之前请求用户确认。</string>
     <string name="settings_wifi_only_title">提示仅通过 Wi-Fi 进行流式传输</string>

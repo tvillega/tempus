@@ -362,7 +362,7 @@
     <string name="settings_title_transcoding_download">Dönüştürme İndir</string>
     <string name="settings_title_ui">Arayüz</string>
     <string name="settings_transcoded_download">Dönüştürülmüş indirme</string>
-    <string name="settings_version_summary" translatable="false">0.1.1</string>
+    <string name="settings_version_summary" translatable="false">0.1.2</string>
     <string name="settings_version_title">Sürüm</string>
     <string name="settings_wifi_only_summary">Mobil ağ üzerinden yayın yapmadan önce kullanıcı onayı iste.</string>
     <string name="settings_wifi_only_title">Yalnızca Wi-Fi ile yayın uyarısı</string>

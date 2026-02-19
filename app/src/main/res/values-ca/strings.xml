@@ -405,7 +405,7 @@
     <string name="settings_title_transcoding_download">Baixada transcodificada</string>
     <string name="settings_title_ui">Interfície d\'usuari</string>
     <string name="settings_transcoded_download">Baixada transcodificada</string>
-    <string name="settings_version_summary" translatable="false">0.1.1</string>
+    <string name="settings_version_summary" translatable="false">0.1.2</string>
     <string name="settings_version_title">Versió</string>
     <string name="settings_wifi_only_summary">Demana la confirmació de l\'usuari abans d\'iniciar la transmissió per la xarxa mòbil.</string>
     <string name="settings_wifi_only_title">Alerta de transmissió només per wifi</string>
