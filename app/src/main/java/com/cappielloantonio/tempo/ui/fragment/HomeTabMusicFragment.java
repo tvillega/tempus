@@ -140,7 +140,7 @@ public class HomeTabMusicFragment extends Fragment implements ClickCallback {
         Log.d(TAG, "initHistoryView: isHidden = " + isHidden);
         if (isHidden) return;
 
-        bind.historyRecyclerView.setHasFixedSize(true);
+        bind.historyRecyclerView.setHasFixedSize(false);
 
         historyAdapter = new SongHorizontalAdapter(getViewLifecycleOwner(), this, true, false, null);
         bind.historyRecyclerView.setAdapter(historyAdapter);
@@ -225,7 +225,7 @@ public class HomeTabMusicFragment extends Fragment implements ClickCallback {
         if (topPlayedSongAdapter != null) return;
         if (homeViewModel.checkHomeSectorVisibility(Constants.HOME_SECTOR_TOP_PLAYED_SONGS)) return;
 
-        bind.topPlayedSongsRecyclerView.setHasFixedSize(true);
+        bind.topPlayedSongsRecyclerView.setHasFixedSize(false);
 
         topPlayedSongAdapter = new SongHorizontalAdapter(getViewLifecycleOwner(), this, true, false, null);
         bind.topPlayedSongsRecyclerView.setAdapter(topPlayedSongAdapter);
@@ -966,7 +966,7 @@ public class HomeTabMusicFragment extends Fragment implements ClickCallback {
         if (topSongAdapter != null) return;
         if (homeViewModel.checkHomeSectorVisibility(Constants.HOME_SECTOR_TOP_SONGS)) return;
 
-        bind.topSongsRecyclerView.setHasFixedSize(true);
+        bind.topSongsRecyclerView.setHasFixedSize(false);
 
         topSongAdapter = new SongHorizontalAdapter(getViewLifecycleOwner(), this, true, false, null);
         bind.topSongsRecyclerView.setAdapter(topSongAdapter);
@@ -1301,11 +1301,7 @@ public class HomeTabMusicFragment extends Fragment implements ClickCallback {
     }
 
     private void initHomeReorganizer() {
-        final Handler handler = new Handler();
-        final Runnable runnable = () -> {
-            if (bind != null) bind.homeSectorRearrangementButton.setVisibility(View.VISIBLE);
-        };
-        handler.postDelayed(runnable, 5000);
+        if (bind != null) bind.homeSectorRearrangementButton.setVisibility(View.VISIBLE);
 
         bind.homeSectorRearrangementButton.setOnClickListener(v -> {
             HomeRearrangementDialog dialog = new HomeRearrangementDialog(() -> {

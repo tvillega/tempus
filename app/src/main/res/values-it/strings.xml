@@ -420,7 +420,7 @@
     <string name="settings_title_transcoding_download">Transcodifica dei Download</string>
     <string name="settings_title_ui">Interfaccia utente</string>
     <string name="settings_transcoded_download">Download transcodificato</string>
-    <string name="settings_version_summary" translatable="false">3.1.0</string>
+    <string name="settings_version_summary" translatable="false">0.1.1</string>
     <string name="settings_version_title">Versione</string>
     <string name="settings_wifi_only_summary">Chiedi conferma all\'utente prima di effettuare streaming su rete mobile.</string>
     <string name="settings_wifi_only_title">Streaming solo tramite Wi-Fi avviso</string>

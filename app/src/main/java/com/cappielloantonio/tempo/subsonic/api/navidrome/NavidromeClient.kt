@@ -7,6 +7,7 @@ import com.cappielloantonio.tempo.BuildConfig
 import com.google.gson.GsonBuilder
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
@@ -31,6 +32,7 @@ class NavidromeClient {
     }
 
     private val service: NavidromeService
+    @Volatile
     private var jwtToken: String? = null
 
     init {
@@ -62,7 +64,12 @@ class NavidromeClient {
         return if (server.endsWith("/")) server else "$server/"
     }
 
-    private fun authenticate(): String? {
+    @Synchronized
+    private fun authenticate(forceRefresh: Boolean = false): String? {
+        if (!forceRefresh && !jwtToken.isNullOrBlank()) {
+            return jwtToken
+        }
+
         val username = Preferences.getUser() ?: return null
         val password = Preferences.getPassword() ?: return null
 
@@ -74,89 +81,97 @@ class NavidromeClient {
             }
         } catch (_: Exception) {
         }
+
+        jwtToken = null
         return null
     }
 
     fun getRecentlyPlayedSongs(count: Int): List<Child> {
-        val token = authenticate() ?: return emptyList()
-
-        try {
-            val response = service.getSongs(
+        val songs = executeWithAuth { token ->
+            service.getSongs(
                 auth = token,
                 sort = "play_date",
                 order = "DESC",
                 start = 0,
                 end = count,
                 recentlyPlayed = true
-            ).execute()
+            )
+        } ?: return emptyList()
 
-            if (response.isSuccessful && response.body() != null) {
-                return response.body()!!.map { it.toChild() }
-            }
-        } catch (_: Exception) {
-        }
-        return emptyList()
+        return songs.map { it.toChild() }
     }
 
     fun getRecentlyPlayedArtists(count: Int): List<ArtistID3> {
-        val token = authenticate() ?: return emptyList()
-
-        try {
-            val response = service.getArtists(
+        val artists = executeWithAuth { token ->
+            service.getArtists(
                 auth = token,
                 sort = "play_date",
                 order = "DESC",
                 start = 0,
                 end = count,
                 recentlyPlayed = true
-            ).execute()
+            )
+        } ?: return emptyList()
 
-            if (response.isSuccessful && response.body() != null) {
-                return response.body()!!.map { it.toArtistID3() }
-            }
-        } catch (_: Exception) {
-        }
-        return emptyList()
+        return artists.map { it.toArtistID3() }
     }
 
     fun getTopPlayedArtists(count: Int): List<ArtistID3> {
-        val token = authenticate() ?: return emptyList()
-
-        try {
-            val response = service.getArtistsSorted(
+        val artists = executeWithAuth { token ->
+            service.getArtistsSorted(
                 auth = token,
                 sort = "play_count",
                 order = "DESC",
                 start = 0,
                 end = count
-            ).execute()
+            )
+        } ?: return emptyList()
 
-            if (response.isSuccessful && response.body() != null) {
-                return response.body()!!.map { it.toArtistID3() }
-            }
-        } catch (_: Exception) {
-        }
-        return emptyList()
+        return artists.map { it.toArtistID3() }
     }
 
     fun getTopPlayedSongs(count: Int): List<Child> {
-        val token = authenticate() ?: return emptyList()
-
-        try {
-            val response = service.getSongsSorted(
+        val songs = executeWithAuth { token ->
+            service.getSongsSorted(
                 auth = token,
                 sort = "play_count",
                 order = "DESC",
                 start = 0,
                 end = count
-            ).execute()
+            )
+        } ?: return emptyList()
 
-            if (response.isSuccessful && response.body() != null) {
-                return response.body()!!.map { it.toChild() }
-            }
+        return songs.map { it.toChild() }
+    }
+
+    private fun <T> executeWithAuth(request: (String) -> Call<T>): T? {
+        val firstToken = authenticate() ?: return null
+        val firstResponse = try {
+            request(firstToken).execute()
         } catch (_: Exception) {
+            return null
         }
-        return emptyList()
+
+        if (firstResponse.isSuccessful) {
+            return firstResponse.body()
+        }
+
+        if (firstResponse.code() != 401 && firstResponse.code() != 403) {
+            return null
+        }
+
+        val refreshedToken = authenticate(forceRefresh = true) ?: return null
+        val retryResponse = try {
+            request(refreshedToken).execute()
+        } catch (_: Exception) {
+            return null
+        }
+
+        if (retryResponse.isSuccessful) {
+            return retryResponse.body()
+        }
+
+        return null
     }
 
     private fun NavidromeArtist.toArtistID3(): ArtistID3 {
