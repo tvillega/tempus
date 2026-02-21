@@ -325,7 +325,7 @@ public class MainActivity extends BaseActivity {
         drawerLayout.setDrawerLockMode(mode);
     }
 
-    private void toggleNavigationDrawerLockOnOrientationChange() {
+    public void toggleNavigationDrawerLockOnOrientationChange() {
         // Ignore orientation check, drawer always unlocked
         if (Preferences.getEnableDrawerOnPortrait()) {
             setNavigationDrawerLock(false);

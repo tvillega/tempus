@@ -169,7 +169,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     public void onStop() {
         super.onStop();
         activity.setBottomSheetVisibility(true);
-        activity.setNavigationDrawerLock(false);
+        activity.toggleNavigationDrawerLockOnOrientationChange();
         activity.setSystemBarsVisibility(!activity.isLandscape);
     }
 
