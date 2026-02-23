@@ -40,8 +40,8 @@
         <Button
             android:id="@+id/player_playback_speed_button"
             style="@style/Widget.Material3.Button.TextButton"
-            android:layout_width="80dp"
-            android:layout_height="48dp"
+            android:layout_width="@dimen/_80sdp"
+            android:layout_height="@dimen/_48sdp"
             android:textSize="@dimen/_14sdp"
             app:cornerRadius="30dp"
             app:layout_constraintStart_toStartOf="parent"
@@ -53,7 +53,7 @@
             android:id="@+id/player_media_extension"
             style="@style/Widget.Material3.Chip.Suggestion"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_height="@dimen/_48sdp"
             android:gravity="center"
             android:checked="true"
             android:clickable="false"
@@ -68,7 +68,7 @@
 
         <ImageButton
             android:id="@+id/player_info_track"
-            android:layout_width="80dp"
+            android:layout_width="@dimen/_80sdp"
             android:layout_height="wrap_content"
             android:padding="16dp"
             android:background="?attr/selectableItemBackgroundBorderless"
@@ -320,8 +320,8 @@
     <ImageButton
         android:id="@id/exo_play_pause"
         style="@style/ExoStyledControls.Button.Center.PlayPause"
-        android:layout_width="75dp"
-        android:layout_height="75dp"
+        android:layout_width="@dimen/_75sdp"
+        android:layout_height="@dimen/_75sdp"
         android:layout_marginTop="0dp"
         app:layout_constraintBottom_toTopOf="@+id/player_quick_action_view"
         app:layout_constraintEnd_toEndOf="parent"
