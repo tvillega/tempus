@@ -3,9 +3,11 @@ package com.cappielloantonio.tempo.repository;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.OptIn;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.media3.common.util.UnstableApi;
 
 import com.cappielloantonio.tempo.App;
 import com.cappielloantonio.tempo.R;
@@ -171,6 +173,29 @@ public class PlaylistRepository {
         }
     }
 
+    public void removeSongFromPlaylist(String playlistId, int index, AddToPlaylistCallback callback) {
+        ArrayList<Integer> indexes = new ArrayList<>();
+        indexes.add(index);
+        App.getSubsonicClientInstance(false)
+                .getPlaylistClient()
+                .updatePlaylist(playlistId, null, true, null, indexes)
+                .enqueue(new Callback<ApiResponse>() {
+                    @Override
+                    public void onResponse(@NonNull Call<ApiResponse> call, @NonNull Response<ApiResponse> response) {
+                        if (response.isSuccessful()) notifyPlaylistChanged();
+                        if (callback != null) {
+                            if (response.isSuccessful()) callback.onSuccess();
+                            else callback.onFailure();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<ApiResponse> call, @NonNull Throwable t) {
+                        if (callback != null) callback.onFailure();
+                    }
+                });
+    }
+
     public void addSongToPlaylist(String playlistId, ArrayList<String> songsId, Boolean playlistVisibilityIsPublic) {
         addSongToPlaylist(playlistId, songsId, playlistVisibilityIsPublic, null);
     }
@@ -218,6 +243,7 @@ public class PlaylistRepository {
                 });
     }
 
+    @OptIn(markerClass = UnstableApi.class)
     private void updateLocalPinnedPlaylistName(String id, String newName) {
         new Thread(() -> {
             List<Playlist> pinned = playlistDao.getAllSync();
