@@ -118,7 +118,7 @@
         android:ellipsize="marquee"
         android:singleLine="true"
         android:text="@string/label_placeholder"
-        android:textSize="20sp"
+        android:textSize="@dimen/section_title_height"
         app:layout_constraintEnd_toStartOf="@+id/button_favorite"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/rating_container" />
