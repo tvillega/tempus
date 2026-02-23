@@ -29,7 +29,7 @@
         android:layout_height="wrap_content"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
-        android:textSize="@dimen/section_title_height"
+        android:textSize="@dimen/_20sdp"
         android:text="@string/home_title_internet_radio_station"
         app:layout_constraintTop_toBottomOf="@id/internet_radio_station_pre_text_view"
         app:layout_constraintStart_toStartOf="parent"

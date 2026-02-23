@@ -56,7 +56,7 @@
                         android:layout_weight="1"
                         android:paddingStart="16dp"
                         android:paddingEnd="16dp"
-                        android:textSize="@dimen/section_title_height"
+                        android:textSize="@dimen/_20sdp"
                         android:text="@string/home_title_podcast_channels" />
 
                     <TextView
@@ -103,7 +103,7 @@
                     android:paddingStart="16dp"
                     android:paddingTop="16dp"
                     android:paddingEnd="16dp"
-                    android:textSize="@dimen/section_title_height"
+                    android:textSize="@dimen/_20sdp"
                     android:text="@string/home_title_newest_podcasts" />
 
                 <androidx.recyclerview.widget.RecyclerView

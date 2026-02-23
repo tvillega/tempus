@@ -40,7 +40,7 @@
                     android:paddingStart="16dp"
                     android:paddingTop="16dp"
                     android:paddingEnd="16dp"
-                    android:textSize="@dimen/section_title_height"
+                    android:textSize="@dimen/_20sdp"
                     android:text="@string/library_title_music_folder" />
 
                 <androidx.recyclerview.widget.RecyclerView
@@ -85,7 +85,7 @@
                         android:layout_weight="1"
                         android:paddingStart="8dp"
                         android:paddingEnd="8dp"
-                        android:textSize="@dimen/section_title_height"
+                        android:textSize="@dimen/_20sdp"
                         android:text="@string/library_title_album" />
 
                     <TextView
@@ -139,7 +139,7 @@
                         android:layout_weight="1"
                         android:paddingStart="8dp"
                         android:paddingEnd="8dp"
-                        android:textSize="@dimen/section_title_height"
+                        android:textSize="@dimen/_20sdp"
                         android:text="@string/library_title_artist" />
 
 
@@ -194,7 +194,7 @@
                         android:layout_weight="1"
                         android:paddingStart="8dp"
                         android:paddingEnd="8dp"
-                        android:textSize="@dimen/section_title_height"
+                        android:textSize="@dimen/_20sdp"
                         android:text="@string/library_title_genre" />
 
 
@@ -247,7 +247,7 @@
                         android:layout_weight="1"
                         android:paddingStart="8dp"
                         android:paddingEnd="8dp"
-                        android:textSize="@dimen/section_title_height"
+                        android:textSize="@dimen/_20sdp"
                         android:text="@string/library_title_playlist" />
 
                     <TextView

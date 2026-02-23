@@ -40,7 +40,7 @@
                     android:paddingEnd="16dp"
                     android:paddingBottom="16dp"
                     android:layout_marginBottom="8dp"
-                    android:textSize="@dimen/section_title_height"
+                    android:textSize="@dimen/_20sdp"
                     android:text="@string/label_placeholder"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toStartOf="@+id/directory_back_image_view"

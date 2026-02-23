@@ -38,7 +38,7 @@
                     android:paddingTop="16dp"
                     android:paddingEnd="16dp"
                     android:paddingBottom="24dp"
-                    android:textSize="@dimen/section_title_height"
+                    android:textSize="@dimen/_20sdp"
                     android:text="@string/genre_catalogue_title_expanded"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent" />
