@@ -2,16 +2,15 @@ package com.cappielloantonio.tempo.ui.activity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.graphics.Rect;
-import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -21,8 +20,8 @@ import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.MediaMetadata;
-import androidx.media3.common.Player;
 import androidx.media3.common.MimeTypes;
+import androidx.media3.common.Player;
 import androidx.media3.common.util.UnstableApi;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
@@ -368,6 +367,7 @@ public class MainActivity extends BaseActivity {
         Preferences.setServer(null);
         Preferences.setLocalAddress(null);
         Preferences.setUser(null);
+        Preferences.setClientCert(null);
 
         // TODO Enter all settings to be reset
         Preferences.setOpenSubsonic(false);
