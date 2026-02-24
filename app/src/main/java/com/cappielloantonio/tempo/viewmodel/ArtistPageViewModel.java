@@ -28,6 +28,7 @@ import com.cappielloantonio.tempo.util.Preferences;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class ArtistPageViewModel extends AndroidViewModel {
@@ -60,24 +61,27 @@ public class ArtistPageViewModel extends AndroidViewModel {
                     allAlbums.sort(Comparator.comparing(AlbumID3::getYear).reversed());
                     
                     mainAlbums.setValue(allAlbums.stream()
-                        .filter(a -> isType(a, "album"))
+                        .filter(a ->
+                                isType(a, "album") && Objects.equals(a.getArtistId(), artist.getId()))
                         .collect(Collectors.toList()));
                     
                     singles.setValue(allAlbums.stream()
-                        .filter(a -> isType(a, "single"))
+                        .filter(a ->
+                                isType(a, "single") && Objects.equals(a.getArtistId(), artist.getId()))
                         .collect(Collectors.toList()));
                     
                     eps.setValue(allAlbums.stream()
-                        .filter(a -> isType(a, "ep"))
+                        .filter(a ->
+                                isType(a, "ep") && Objects.equals(a.getArtistId(), artist.getId()))
                         .collect(Collectors.toList()));
                 }
+                if (allAlbums != null) {
+                    allAlbums.sort(Comparator.comparing(AlbumID3::getYear).reversed());
 
-                List<AlbumID3> appearsOnList = fullArtist.getAppearsOn();
-                if (appearsOnList != null) {
-                    appearsOnList.sort(Comparator.comparing(AlbumID3::getYear).reversed());
-                    appearsOn.setValue(appearsOnList);
-                } else {
-                    appearsOn.setValue(new java.util.ArrayList<>());
+                    appearsOn.setValue(allAlbums.stream()
+                            .filter(a -> !Objects.equals(a.getArtistId(), artist.getId()))
+                            .collect(Collectors.toList())
+                    );
                 }
             }
         });
