@@ -1,0 +1,9 @@
+<resources>
+    <string name="settings_support_summary">Touch to crash the app</string>
+    <string name="settings_support_title">Crash easter egg</string>
+    <string name="settings_support_discussion_link" translatable="false">127.0.0.1</string>
+    <string name="settings_github_title">Source code</string>
+    <string name="settings_github_link">https://github.com/tvillega/tempus/tree/fiddle</string>
+    <string name="settings_github_summary">The source code is licenced under GPL-3.0</string>
+    <string name="settings_about_summary">Fiddle is a fork of Tempus aimed at small screen devices. All due credit to the creator, maintainer and contributors.</string>
+</resources>
