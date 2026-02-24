@@ -282,9 +282,9 @@ public class ArtistPageFragment extends Fragment implements ClickCallback {
             } else {
                 if (bind != null) {
                     bind.artistPageTopSongsSector.setVisibility(!songs.isEmpty() ? View.VISIBLE : View.GONE);
-                    bind.mostStreamedSongTextViewClickable.setVisibility(songs.size() > 10 ? View.VISIBLE : View.GONE);
+                    bind.mostStreamedSongTextViewClickable.setVisibility(songs.size() > 3 ? View.VISIBLE : View.GONE);
                 }
-                songHorizontalAdapter.setItems(songs.stream().limit(10).collect(java.util.stream.Collectors.toList()));
+                songHorizontalAdapter.setItems(songs.stream().limit(3).collect(java.util.stream.Collectors.toList()));
                 reapplyPlayback();
             }
         });
