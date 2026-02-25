@@ -1,4 +1,4 @@
-package com.cappielloantonio.tempo.ui.activity.base;
+package com.cappielloantonio.tempo.navigation;
 
 import android.content.Context;
 import android.view.View;
