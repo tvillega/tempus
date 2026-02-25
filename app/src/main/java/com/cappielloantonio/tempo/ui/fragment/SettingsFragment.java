@@ -119,12 +119,6 @@ public class SettingsFragment extends Fragment {
         activity.setSystemBarsVisibility(!activity.isLandscape);
     }
 
-    @Override
-    public void onStop() {
-        super.onStop();
-        activity.setBottomSheetVisibility(true);
-    }
-
     private void initAppBar() {
         bind.settingsToolbar.setNavigationOnClickListener(v -> {
             activity.navController.navigateUp();
