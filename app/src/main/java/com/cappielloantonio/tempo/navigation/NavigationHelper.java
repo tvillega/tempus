@@ -1,18 +1,21 @@
 package com.cappielloantonio.tempo.navigation;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.view.View;
 import android.view.Window;
 import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.OptIn;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.media3.common.util.UnstableApi;
 import androidx.navigation.NavController;
+import androidx.navigation.NavDestination;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
 
@@ -22,6 +25,8 @@ import com.cappielloantonio.tempo.util.Preferences;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.navigation.NavigationView;
+
+import org.jetbrains.annotations.Contract;
 
 import java.util.Objects;
 
@@ -34,67 +39,50 @@ public class NavigationHelper {
     /* Navigation components */
     private NavigationView navigationView;
     private NavHostFragment navHostFragment;
-    private NavController navController;
 
     /* States that need to be remembered */
-    private final Context context;
+    // -- //
 
     /* Private constructor */
-    private NavigationHelper(@NonNull Context context) {
-        this.context = context.getApplicationContext();
+    public NavigationHelper(@NonNull BottomNavigationView bottomNavigationView,
+                            @NonNull FrameLayout bottomNavigationViewFrame,
+                            @NonNull DrawerLayout drawerLayout,
+                            @NonNull NavigationView navigationView,
+                            @NonNull NavHostFragment navHostFragment) {
+        this.bottomNavigationView = bottomNavigationView;
+        this.bottomNavigationViewFrame = bottomNavigationViewFrame;
+        this.drawerLayout = drawerLayout;
+        this.navigationView = navigationView;
+        this.navHostFragment = navHostFragment;
     }
 
-    /* Call inside onCreate() in MainActivity giving as argument `this` */
-    @OptIn(markerClass = UnstableApi.class)
-    public static NavigationHelper init(@NonNull MainActivity activity) {
-        NavigationHelper helper = new NavigationHelper(activity);
-        helper.bindViews(activity);
-        helper.setupNavigation(activity);
-        return helper;
-    }
-
-    /* Call inside onDestroy() in MainActivity*/
-    public void release() {
-        bottomNavigationView = null;
-        bottomNavigationViewFrame = null;
-        drawerLayout = null;
-        navigationView = null;
-        navHostFragment = null;
-        navController = null;
-    }
-
-    /* Bind the views by finding them on the layout (XML id attr) */
-    @OptIn(markerClass = UnstableApi.class)
-    private void bindViews(@NonNull MainActivity activity) {
-        bottomNavigationView = activity.findViewById(R.id.bottom_navigation);
-        bottomNavigationViewFrame = activity.findViewById(R.id.bottom_navigation_frame);
-        drawerLayout = activity.findViewById(R.id.drawer_layout);
-        navigationView = activity.findViewById(R.id.nav_view);
-
-        navHostFragment = (NavHostFragment) activity
-                .getSupportFragmentManager()
-                .findFragmentById(R.id.nav_host_fragment);
-        navController = Objects.requireNonNull(navHostFragment).getNavController();
-    }
-
-    /* The navigation graph (untouched original implementation) */
-    @OptIn(markerClass = UnstableApi.class)
-    private void setupNavigation(@NonNull MainActivity activity) {
+    public void syncWithBottomSheetBehavior(@NonNull BottomSheetBehavior<View> bottomSheetBehavior,
+                                            @NonNull NavController navController) {
         navController.addOnDestinationChangedListener(
                 (controller, destination, arguments) -> {
-                    int destId = destination.getId();
-                    boolean isTarget = destId == R.id.homeFragment ||
-                            destId == R.id.libraryFragment ||
-                            destId == R.id.downloadFragment;
+                    // React to the user clicking one of these on bottom-navbar/drawer
+                    boolean isTarget = isTargetDestination(destination);
+                    int currentState = bottomSheetBehavior.getState();
 
-                    if (isTarget &&
-                            activity.bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED) {
-                        activity.bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+                    if (isTarget && currentState == BottomSheetBehavior.STATE_EXPANDED) {
+                        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
                     }
                 });
 
         NavigationUI.setupWithNavController(bottomNavigationView, navController);
         NavigationUI.setupWithNavController(navigationView, navController);
+    }
+
+    @Contract(pure = true)
+    private static boolean isTargetDestination(NavDestination destination) {
+        int destId = destination.getId();
+        return destId == R.id.homeFragment ||
+                destId == R.id.libraryFragment ||
+                destId == R.id.downloadFragment ||
+                destId == R.id.albumCatalogueFragment ||
+                destId == R.id.artistCatalogueFragment ||
+                destId == R.id.genreCatalogueFragment ||
+                destId == R.id.playlistCatalogueFragment;
     }
 
     /*
@@ -117,7 +105,13 @@ public class NavigationHelper {
         drawerLayout.setDrawerLockMode(mode);
     }
 
-    public void toggleNavigationDrawerLockOnOrientationChange(MainActivity activity, boolean isLandscape) {
+    @OptIn(markerClass = UnstableApi.class)
+    public void toggleNavigationDrawerLockOnOrientationChange(
+            AppCompatActivity activity) {
+
+        int orientation = activity.getResources().getConfiguration().orientation;
+        boolean isLandscape = orientation == Configuration.ORIENTATION_LANDSCAPE;
+
         if (Preferences.getEnableDrawerOnPortrait()) {
             setNavigationDrawerLock(false);
             return;
@@ -129,11 +123,6 @@ public class NavigationHelper {
     All of these are the "backward compatible" changes that don't break the assumption
     that everything was defined on the activity and is gobally available
      */
-
-    @NonNull
-    public NavController getNavController() {
-        return navController;
-    }
 
     @NonNull
     public BottomNavigationView getBottomNavigationView() {
@@ -155,7 +144,7 @@ public class NavigationHelper {
      */
 
     @OptIn(markerClass = UnstableApi.class)
-    public void setSystemBarsVisibility(MainActivity activity, boolean visibility) {
+    public void setSystemBarsVisibility(AppCompatActivity activity, boolean visibility) {
         WindowInsetsControllerCompat insetsController;
         Window window = activity.getWindow();
         View decorView = window.getDecorView();
