@@ -32,10 +32,10 @@ import com.cappielloantonio.tempo.R;
 import com.cappielloantonio.tempo.broadcast.receiver.ConnectivityStatusBroadcastReceiver;
 import com.cappielloantonio.tempo.databinding.ActivityMainBinding;
 import com.cappielloantonio.tempo.github.utils.UpdateUtil;
+import com.cappielloantonio.tempo.navigation.NavigationController;
+import com.cappielloantonio.tempo.navigation.NavigationHelper;
 import com.cappielloantonio.tempo.service.MediaManager;
 import com.cappielloantonio.tempo.ui.activity.base.BaseActivity;
-import com.cappielloantonio.tempo.navigation.NavigationDelegate;
-import com.cappielloantonio.tempo.navigation.NavigationHelper;
 import com.cappielloantonio.tempo.ui.dialog.ConnectionAlertDialog;
 import com.cappielloantonio.tempo.ui.dialog.GithubTempoUpdateDialog;
 import com.cappielloantonio.tempo.ui.dialog.ServerUnreachableDialog;
@@ -59,16 +59,14 @@ public class MainActivity extends BaseActivity {
     private static final String TAG = "MainActivityLogs";
 
     public ActivityMainBinding bind;
-    private NavigationHelper navigationHelper;
     private MainViewModel mainViewModel;
 
     private FragmentManager fragmentManager;
     private NavHostFragment navHostFragment;
     private BottomNavigationView bottomNavigationView;
-    private FrameLayout bottomNavigationViewFrame;
     public NavController navController;
-    private DrawerLayout drawerLayout;
     private NavigationView navigationView;
+    private NavigationController navigationController;
     public BottomSheetBehavior bottomSheetBehavior;
     public boolean isLandscape = false;
     private AssetLinkNavigator assetLinkNavigator;
@@ -128,10 +126,6 @@ public class MainActivity extends BaseActivity {
         super.onDestroy();
         connectivityStatusReceiverManager(false);
         bind = null;
-        NavigationDelegate.getInstance().unbind();
-        if (navigationHelper != null) {
-            navigationHelper.release();
-        }
     }
 
     @Override
@@ -154,16 +148,7 @@ public class MainActivity extends BaseActivity {
         fragmentManager = getSupportFragmentManager();
 
         initBottomSheet();
-
-        // All of the navigation stuff, contained here
-        NavigationDelegate.getInstance().bind(this);
-        navigationHelper = NavigationHelper.init(this);
-
-        // This is for "backward compatibility" with old code
-        navController = navigationHelper.getNavController();
-        bottomNavigationView = navigationHelper.getBottomNavigationView();
-        bottomNavigationViewFrame = navigationHelper.getBottomNavigationViewFrame();
-        drawerLayout = navigationHelper.getDrawerLayout();
+        initNavigation();
 
         if (Preferences.getPassword() != null || (Preferences.getToken() != null && Preferences.getSalt() != null)) {
             goFromLogin();
@@ -173,6 +158,36 @@ public class MainActivity extends BaseActivity {
 
         toggleNavigationDrawerLockOnOrientationChange();
 
+    }
+
+    private void initNavigation() {
+        // Bind views
+        // -> Saves in global variables for backward compatibility
+        bottomNavigationView = findViewById(R.id.bottom_navigation);
+        navigationView = findViewById(R.id.nav_view);
+
+        // Bind swappable fragment of activity to navController
+        navHostFragment = (NavHostFragment) this
+                .getSupportFragmentManager()
+                .findFragmentById(R.id.nav_host_fragment);
+        navController = Objects.requireNonNull(navHostFragment).getNavController();
+
+        // Helper
+        NavigationHelper navigationHelper =
+                new NavigationHelper(
+                        bottomNavigationView,
+                        findViewById(R.id.bottom_navigation_frame),
+                        findViewById(R.id.drawer_layout),
+                        navigationView,
+                        navHostFragment
+                );
+
+        // Controller
+        navigationController = new NavigationController(navigationHelper);
+        navigationController.syncWithBottomSheetBehavior(bottomSheetBehavior, navController);
+
+        // Expose in activity for backward compatibility
+        bottomNavigationView = navigationHelper.getBottomNavigationView();
     }
 
     // BOTTOM SHEET/NAVIGATION
@@ -275,41 +290,41 @@ public class MainActivity extends BaseActivity {
     }
 
     public void setBottomNavigationBarVisibility(boolean visibility) {
-        navigationHelper.setBottomNavigationBarVisibility(visibility);
+        navigationController.setNavbarVisibility(visibility);
     }
 
     public void toggleBottomNavigationBarVisibilityOnOrientationChange() {
         // Ignore orientation change, bottom navbar always hidden
         if (Preferences.getHideBottomNavbarOnPortrait()) {
-            navigationHelper.setBottomNavigationBarVisibility(false);
+            navigationController.setNavbarVisibility(false);
             setPortraitPlayerBottomSheetPeekHeight(56);
-            navigationHelper.setSystemBarsVisibility(this, !isLandscape);
+            navigationController.setSystemBarsVisibility(this, !isLandscape);
             return;
         }
 
         if (!isLandscape) {
             // Show app navbar + show system bars
             setPortraitPlayerBottomSheetPeekHeight(136);
-            navigationHelper.setBottomNavigationBarVisibility(true);
-            navigationHelper.setSystemBarsVisibility(this, true);
+            navigationController.setNavbarVisibility(true);
+            navigationController.setSystemBarsVisibility(this, true);
         } else {
             // Hide app navbar + hide system bars
             setPortraitPlayerBottomSheetPeekHeight(56);
-            navigationHelper.setBottomNavigationBarVisibility(false);
-            navigationHelper.setSystemBarsVisibility(this, false);
+            navigationController.setNavbarVisibility(false);
+            navigationController.setSystemBarsVisibility(this, false);
         }
     }
 
     public void setNavigationDrawerLock(boolean locked) {
-        navigationHelper.setNavigationDrawerLock(locked);
+        navigationController.setDrawerLock(locked);
     }
 
     public void toggleNavigationDrawerLockOnOrientationChange() {
-        navigationHelper.toggleNavigationDrawerLockOnOrientationChange(this, isLandscape);
+        navigationController.toggleDrawerLockOnOrientation(this);
     }
 
     public void setSystemBarsVisibility(boolean visibility) {
-        navigationHelper.setSystemBarsVisibility(this, visibility);
+        navigationController.setSystemBarsVisibility(this, visibility);
     }
 
     private void setPortraitPlayerBottomSheetPeekHeight(int peekHeight) {
