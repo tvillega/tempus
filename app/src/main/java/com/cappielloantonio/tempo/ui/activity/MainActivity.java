@@ -10,7 +10,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.TextUtils;
-import android.view.Gravity;
 import android.view.View;
 import android.widget.FrameLayout;
 
@@ -39,6 +38,9 @@ import com.cappielloantonio.tempo.databinding.ActivityMainBinding;
 import com.cappielloantonio.tempo.github.utils.UpdateUtil;
 import com.cappielloantonio.tempo.service.MediaManager;
 import com.cappielloantonio.tempo.ui.activity.base.BaseActivity;
+import com.cappielloantonio.tempo.ui.activity.base.NavigationController;
+import com.cappielloantonio.tempo.ui.activity.base.NavigationDelegate;
+import com.cappielloantonio.tempo.ui.activity.base.NavigationHelper;
 import com.cappielloantonio.tempo.ui.dialog.ConnectionAlertDialog;
 import com.cappielloantonio.tempo.ui.dialog.GithubTempoUpdateDialog;
 import com.cappielloantonio.tempo.ui.dialog.ServerUnreachableDialog;
@@ -62,6 +64,7 @@ public class MainActivity extends BaseActivity {
     private static final String TAG = "MainActivityLogs";
 
     public ActivityMainBinding bind;
+    private NavigationHelper navigationHelper;
     private MainViewModel mainViewModel;
 
     private FragmentManager fragmentManager;
@@ -71,13 +74,17 @@ public class MainActivity extends BaseActivity {
     public NavController navController;
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
-    private BottomSheetBehavior bottomSheetBehavior;
+    public BottomSheetBehavior bottomSheetBehavior;
     public boolean isLandscape = false;
     private AssetLinkNavigator assetLinkNavigator;
     private AssetLinkUtil.AssetLink pendingAssetLink;
 
     ConnectivityStatusBroadcastReceiver connectivityStatusBroadcastReceiver;
     private Intent pendingDownloadPlaybackIntent;
+
+    public ActivityMainBinding getBinding() {
+        return bind;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -126,6 +133,10 @@ public class MainActivity extends BaseActivity {
         super.onDestroy();
         connectivityStatusReceiverManager(false);
         bind = null;
+        NavigationDelegate.getInstance().unbind();
+        if (navigationHelper != null) {
+            navigationHelper.release();
+        }
     }
 
     @Override
@@ -148,7 +159,16 @@ public class MainActivity extends BaseActivity {
         fragmentManager = getSupportFragmentManager();
 
         initBottomSheet();
-        initNavigation();
+
+        // All of the navigation stuff, contained here
+        NavigationDelegate.getInstance().bind(this);
+        navigationHelper = NavigationHelper.init(this);
+
+        // This is for "backward compatibility" with old code
+        navController = navigationHelper.getNavController();
+        bottomNavigationView = navigationHelper.getBottomNavigationView();
+        bottomNavigationViewFrame = navigationHelper.getBottomNavigationViewFrame();
+        drawerLayout = navigationHelper.getDrawerLayout();
 
         if (Preferences.getPassword() != null || (Preferences.getToken() != null && Preferences.getSalt() != null)) {
             goFromLogin();
@@ -259,103 +279,42 @@ public class MainActivity extends BaseActivity {
         bind.bottomNavigation.setTranslationY(slideY);
     }
 
-    private void initNavigation() {
-        bottomNavigationView = findViewById(R.id.bottom_navigation);
-        bottomNavigationViewFrame = findViewById(R.id.bottom_navigation_frame);
-        navHostFragment = (NavHostFragment) fragmentManager.findFragmentById(R.id.nav_host_fragment);
-        navController = Objects.requireNonNull(navHostFragment).getNavController();
-        // This is the lateral slide-in drawer
-        drawerLayout = findViewById(R.id.drawer_layout);
-        navigationView = findViewById(R.id.nav_view);
-
-        /*
-         * In questo modo intercetto il cambio schermata tramite navbar e se il bottom sheet è aperto,
-         * lo chiudo
-         */
-        navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
-            if (bottomSheetBehavior.getState() == BottomSheetBehavior.STATE_EXPANDED && (
-                    destination.getId() == R.id.homeFragment ||
-                            destination.getId() == R.id.libraryFragment ||
-                            destination.getId() == R.id.downloadFragment)
-            ) {
-                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-            }
-        });
-
-        NavigationUI.setupWithNavController(bottomNavigationView, navController);
-        NavigationUI.setupWithNavController(navigationView, navController);
-    }
-
     public void setBottomNavigationBarVisibility(boolean visibility) {
-        if (visibility) {
-            bottomNavigationView.setVisibility(View.VISIBLE);
-            bottomNavigationViewFrame.setVisibility(View.VISIBLE);
-        } else {
-            bottomNavigationView.setVisibility(View.GONE);
-            bottomNavigationViewFrame.setVisibility(View.GONE);
-        }
+        navigationHelper.setBottomNavigationBarVisibility(visibility);
     }
 
     public void toggleBottomNavigationBarVisibilityOnOrientationChange() {
         // Ignore orientation change, bottom navbar always hidden
         if (Preferences.getHideBottomNavbarOnPortrait()) {
-            setBottomNavigationBarVisibility(false);
+            navigationHelper.setBottomNavigationBarVisibility(false);
             setPortraitPlayerBottomSheetPeekHeight(56);
-            setSystemBarsVisibility(!isLandscape);
+            navigationHelper.setSystemBarsVisibility(this, !isLandscape);
             return;
         }
 
         if (!isLandscape) {
             // Show app navbar + show system bars
             setPortraitPlayerBottomSheetPeekHeight(136);
-            setBottomNavigationBarVisibility(true);
-            setSystemBarsVisibility(true);
+            navigationHelper.setBottomNavigationBarVisibility(true);
+            navigationHelper.setSystemBarsVisibility(this, true);
         } else {
             // Hide app navbar + hide system bars
             setPortraitPlayerBottomSheetPeekHeight(56);
-            setBottomNavigationBarVisibility(false);
-            setSystemBarsVisibility(false);
+            navigationHelper.setBottomNavigationBarVisibility(false);
+            navigationHelper.setSystemBarsVisibility(this, false);
         }
     }
 
     public void setNavigationDrawerLock(boolean locked) {
-        int mode = locked
-                ? DrawerLayout.LOCK_MODE_LOCKED_CLOSED
-                : DrawerLayout.LOCK_MODE_UNLOCKED;
-        drawerLayout.setDrawerLockMode(mode);
+        navigationHelper.setNavigationDrawerLock(locked);
     }
 
     public void toggleNavigationDrawerLockOnOrientationChange() {
-        // Ignore orientation check, drawer always unlocked
-        if (Preferences.getEnableDrawerOnPortrait()) {
-            setNavigationDrawerLock(false);
-            return;
-        }
-        if (!isLandscape) {
-            setNavigationDrawerLock(true);
-        } else {
-            setNavigationDrawerLock(false);
-        }
+        navigationHelper.toggleNavigationDrawerLockOnOrientationChange(this, isLandscape);
     }
 
     public void setSystemBarsVisibility(boolean visibility) {
-        WindowInsetsControllerCompat insetsController;
-        View decorView = getWindow().getDecorView();
-        insetsController = new WindowInsetsControllerCompat(getWindow(), decorView);
-
-        if (visibility) {
-            WindowCompat.setDecorFitsSystemWindows(getWindow(), true);
-            insetsController.show(WindowInsetsCompat.Type.navigationBars());
-            insetsController.show(WindowInsetsCompat.Type.statusBars());
-            insetsController.setSystemBarsBehavior(
-                    WindowInsetsControllerCompat.BEHAVIOR_DEFAULT);
-        } else {
-            WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
-            insetsController.hide(WindowInsetsCompat.Type.navigationBars());
-            insetsController.hide(WindowInsetsCompat.Type.statusBars());
-            insetsController.setSystemBarsBehavior(
-                    WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
-        }
+        navigationHelper.setSystemBarsVisibility(this, visibility);
     }
 
     private void setPortraitPlayerBottomSheetPeekHeight(int peekHeight) {
