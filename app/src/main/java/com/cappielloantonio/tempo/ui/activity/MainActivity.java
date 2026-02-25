@@ -48,7 +48,6 @@ import com.cappielloantonio.tempo.viewmodel.MainViewModel;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.color.DynamicColors;
-import com.google.android.material.navigation.NavigationView;
 import com.google.common.util.concurrent.MoreExecutors;
 
 import java.util.Objects;
@@ -62,10 +61,8 @@ public class MainActivity extends BaseActivity {
     private MainViewModel mainViewModel;
 
     private FragmentManager fragmentManager;
-    private NavHostFragment navHostFragment;
-    private BottomNavigationView bottomNavigationView;
+
     public NavController navController;
-    private NavigationView navigationView;
     private NavigationController navigationController;
     public BottomSheetBehavior bottomSheetBehavior;
     public boolean isLandscape = false;
@@ -161,33 +158,29 @@ public class MainActivity extends BaseActivity {
     }
 
     private void initNavigation() {
-        // Bind views
-        // -> Saves in global variables for backward compatibility
-        bottomNavigationView = findViewById(R.id.bottom_navigation);
-        navigationView = findViewById(R.id.nav_view);
-
-        // Bind swappable fragment of activity to navController
-        navHostFragment = (NavHostFragment) this
+        // We link the nav_graph.xml with our navigationController
+        NavHostFragment navHostFragment = (NavHostFragment) this
                 .getSupportFragmentManager()
                 .findFragmentById(R.id.nav_host_fragment);
         navController = Objects.requireNonNull(navHostFragment).getNavController();
+        /*
+        navController is currently global since some legacy code still invokes it directly
+        the MainActivity methods that use it must be converted to NavigationHelper methods
+        */
 
         // Helper
         NavigationHelper navigationHelper =
                 new NavigationHelper(
-                        bottomNavigationView,
+                        findViewById(R.id.bottom_navigation),
                         findViewById(R.id.bottom_navigation_frame),
                         findViewById(R.id.drawer_layout),
-                        navigationView,
+                        findViewById(R.id.nav_view),
                         navHostFragment
                 );
 
         // Controller
         navigationController = new NavigationController(navigationHelper);
         navigationController.syncWithBottomSheetBehavior(bottomSheetBehavior, navController);
-
-        // Expose in activity for backward compatibility
-        bottomNavigationView = navigationHelper.getBottomNavigationView();
     }
 
     // BOTTOM SHEET/NAVIGATION
@@ -370,7 +363,7 @@ public class MainActivity extends BaseActivity {
     }
 
     private void goToHome() {
-        bottomNavigationView.setVisibility(View.VISIBLE);
+        setBottomNavigationBarVisibility(true);
 
         if (Objects.requireNonNull(navController.getCurrentDestination()).getId() == R.id.landingFragment) {
             navController.navigate(R.id.action_landingFragment_to_homeFragment);
