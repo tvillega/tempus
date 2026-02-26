@@ -802,7 +802,8 @@ object Preferences {
     fun getAndroidAutoFourthTab(): Int {
         return App.getInstance().preferences.getString(AA_FOURTH_TAB, "3")!!.toInt()
     }
-	
+
+    @JvmStatic
     fun getTileSize(): Int {
         val parsed = App.getInstance().preferences.getString(TILE_SIZE, "2")?.toIntOrNull()
         return parsed?.takeIf { it in 2..6 } ?: 2
