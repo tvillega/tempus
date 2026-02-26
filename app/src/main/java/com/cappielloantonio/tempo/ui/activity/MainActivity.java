@@ -36,6 +36,8 @@ import com.cappielloantonio.tempo.navigation.NavigationController;
 import com.cappielloantonio.tempo.navigation.NavigationHelper;
 import com.cappielloantonio.tempo.service.MediaManager;
 import com.cappielloantonio.tempo.ui.activity.base.BaseActivity;
+import com.cappielloantonio.tempo.ui.controller.BottomSheetController;
+import com.cappielloantonio.tempo.ui.controller.BottomSheetHelper;
 import com.cappielloantonio.tempo.ui.dialog.ConnectionAlertDialog;
 import com.cappielloantonio.tempo.ui.dialog.GithubTempoUpdateDialog;
 import com.cappielloantonio.tempo.ui.dialog.ServerUnreachableDialog;
@@ -60,10 +62,9 @@ public class MainActivity extends BaseActivity {
     public ActivityMainBinding bind;
     private MainViewModel mainViewModel;
 
-    private FragmentManager fragmentManager;
-
     public NavController navController;
     private NavigationController navigationController;
+    private BottomSheetController bottomSheetController;
     public BottomSheetBehavior bottomSheetBehavior;
     public boolean isLandscape = false;
     private AssetLinkNavigator assetLinkNavigator;
@@ -142,7 +143,6 @@ public class MainActivity extends BaseActivity {
     }
 
     public void init() {
-        fragmentManager = getSupportFragmentManager();
 
         initBottomSheet();
         initNavigation();
@@ -183,49 +183,48 @@ public class MainActivity extends BaseActivity {
         navigationController.syncWithBottomSheetBehavior(bottomSheetBehavior, navController);
     }
 
-    // BOTTOM SHEET/NAVIGATION
     private void initBottomSheet() {
-        bottomSheetBehavior = BottomSheetBehavior.from(findViewById(R.id.player_bottom_sheet));
-        bottomSheetBehavior.addBottomSheetCallback(bottomSheetCallback);
-        fragmentManager.beginTransaction().replace(R.id.player_bottom_sheet, new PlayerBottomSheetFragment(), "PlayerBottomSheet").commit();
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        View bottomSheetView = findViewById(R.id.player_bottom_sheet);
+        bottomSheetBehavior = BottomSheetBehavior.from(bottomSheetView);
+        /*
+        bottomSheetBehavior is currently global since some legacy code still invokes it directly
+        the MainActivity methods that use it must be converted to BottomSheetHelper methods
+        */
 
-        checkBottomSheetAfterStateChanged();
+        // Helper
+        BottomSheetHelper bottomSheetHelper =
+                new BottomSheetHelper(
+                        bottomSheetBehavior,
+                        bottomSheetView,
+                        fragmentManager
+                );
+
+        // Controller
+        bottomSheetController = new BottomSheetController(bottomSheetHelper);
+        bottomSheetController.addCallback(bottomSheetCallback);
+        bottomSheetController.replaceFragment(R.id.player_bottom_sheet);
+        bottomSheetController.checkAfterStateChanged(mainViewModel);
     }
 
     public void setBottomSheetInPeek(Boolean isVisible) {
-        if (isVisible) {
-            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-        } else {
-            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-        }
+        bottomSheetController.setStateInPeek(isVisible);
     }
 
     public void setBottomSheetVisibility(boolean visibility) {
-        if (visibility) {
-            findViewById(R.id.player_bottom_sheet).setVisibility(View.VISIBLE);
-        } else {
-            findViewById(R.id.player_bottom_sheet).setVisibility(View.GONE);
-        }
-    }
-
-    private void checkBottomSheetAfterStateChanged() {
-        final Handler handler = new Handler();
-        final Runnable runnable = () -> setBottomSheetInPeek(mainViewModel.isQueueLoaded());
-        handler.postDelayed(runnable, 100);
+        bottomSheetController.setVisibility(visibility);
     }
 
     public void collapseBottomSheetDelayed() {
-        final Handler handler = new Handler();
-        final Runnable runnable = () -> bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-        handler.postDelayed(runnable, 100);
+        bottomSheetController.collapseDelayed();
     }
 
     public void expandBottomSheet() {
-        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        bottomSheetController.expand();
     }
 
     public void setBottomSheetDraggableState(Boolean isDraggable) {
-        bottomSheetBehavior.setDraggable(isDraggable);
+        bottomSheetController.setDraggable(isDraggable);
     }
 
     private final BottomSheetBehavior.BottomSheetCallback bottomSheetCallback =
@@ -238,7 +237,7 @@ public class MainActivity extends BaseActivity {
 
                     switch (state) {
                         case BottomSheetBehavior.STATE_HIDDEN:
-                            resetMusicSession();
+                            resetMusicSession(); // I can't put the callback inside BottomSheetHelper because of this line
                             break;
                         case BottomSheetBehavior.STATE_COLLAPSED:
                             if (playerBottomSheetFragment != null)
@@ -262,12 +261,7 @@ public class MainActivity extends BaseActivity {
             };
 
     private void animateBottomSheet(float slideOffset) {
-        PlayerBottomSheetFragment playerBottomSheetFragment = (PlayerBottomSheetFragment) getSupportFragmentManager().findFragmentByTag("PlayerBottomSheet");
-        if (playerBottomSheetFragment != null) {
-            float condensedSlideOffset = Math.max(0.0f, Math.min(0.2f, slideOffset - 0.2f)) / 0.2f;
-            playerBottomSheetFragment.getPlayerHeader().setAlpha(1 - condensedSlideOffset);
-            playerBottomSheetFragment.getPlayerHeader().setVisibility(condensedSlideOffset > 0.99 ? View.GONE : View.VISIBLE);
-        }
+        bottomSheetController.animate(slideOffset);
     }
 
     private void animateBottomNavigation(float slideOffset, int navigationHeight) {
@@ -287,22 +281,23 @@ public class MainActivity extends BaseActivity {
     }
 
     public void toggleBottomNavigationBarVisibilityOnOrientationChange() {
+        float displayDensity = getResources().getDisplayMetrics().density;
         // Ignore orientation change, bottom navbar always hidden
         if (Preferences.getHideBottomNavbarOnPortrait()) {
             navigationController.setNavbarVisibility(false);
-            setPortraitPlayerBottomSheetPeekHeight(56);
+            bottomSheetController.setPeekHeight(56, displayDensity);
             navigationController.setSystemBarsVisibility(this, !isLandscape);
             return;
         }
 
         if (!isLandscape) {
             // Show app navbar + show system bars
-            setPortraitPlayerBottomSheetPeekHeight(136);
+            bottomSheetController.setPeekHeight(136, displayDensity);
             navigationController.setNavbarVisibility(true);
             navigationController.setSystemBarsVisibility(this, true);
         } else {
             // Hide app navbar + hide system bars
-            setPortraitPlayerBottomSheetPeekHeight(56);
+            bottomSheetController.setPeekHeight(56, displayDensity);
             navigationController.setNavbarVisibility(false);
             navigationController.setSystemBarsVisibility(this, false);
         }
@@ -320,14 +315,13 @@ public class MainActivity extends BaseActivity {
         navigationController.setSystemBarsVisibility(this, visibility);
     }
 
-    private void setPortraitPlayerBottomSheetPeekHeight(int peekHeight) {
-        FrameLayout bottomSheet = findViewById(R.id.player_bottom_sheet);
-        BottomSheetBehavior<FrameLayout> behavior =
-                BottomSheetBehavior.from(bottomSheet);
-
-        int newPeekPx = (int) (peekHeight * getResources().getDisplayMetrics().density);
-        behavior.setPeekHeight(newPeekPx);
-    }
+    /*
+    There are only 4 init functions that must exist up to here
+    1. init()
+    2. initNavigation()
+    3. initBottomSheet()
+    4. bottomSheetCallback = new BottomSheetBehavior.BottomSheetCallback() { ... }
+     */
 
     private void initService() {
         MediaManager.check(getMediaBrowserListenableFuture());
