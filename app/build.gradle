@@ -10,8 +10,8 @@ android {
         minSdkVersion 24
         targetSdk 36
 
-        versionCode 22
-        versionName '4.11.0-fiddle.4'
+        versionCode 30
+        versionName '4.11.0-fiddle.8'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
 
         javaCompileOptions {
@@ -53,12 +53,6 @@ android {
         degoogled {
             dimension = "default"
             applicationId "com.eddyizm.degoogled.tempus"
-        }
-        fiddle {
-            dimension = "default"
-            applicationId "com.tvillega.fiddle"
-            resValue "string", "app_name", "Fiddle"
-            
         }
 
         fiddle {
