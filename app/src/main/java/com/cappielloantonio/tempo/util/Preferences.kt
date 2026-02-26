@@ -16,6 +16,7 @@ object Preferences {
     private const val TOKEN = "token"
     private const val SALT = "salt"
     private const val LOW_SECURITY = "low_security"
+    private const val CLIENT_CERT = "client_cert"
     private const val BATTERY_OPTIMIZATION = "battery_optimization"
     private const val SERVER_ID = "server_id"
     private const val OPEN_SUBSONIC = "open_subsonic"
@@ -172,6 +173,16 @@ object Preferences {
     @JvmStatic
     fun setLowSecurity(isLowSecurity: Boolean) {
         App.getInstance().preferences.edit().putBoolean(LOW_SECURITY, isLowSecurity).apply()
+    }
+
+    @JvmStatic
+    fun getClientCert(): String? {
+        return App.getInstance().preferences.getString(CLIENT_CERT, null)
+    }
+
+    @JvmStatic
+    fun setClientCert(clientCert: String?) {
+        App.getInstance().preferences.edit().putString(CLIENT_CERT, clientCert).apply()
     }
 
     @JvmStatic
