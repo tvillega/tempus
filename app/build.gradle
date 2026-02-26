@@ -3,15 +3,15 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-parcelize'
 
 android {
-    compileSdk 35
+    compileSdk 36
     buildToolsVersion = '35.0.0'
 
     defaultConfig {
         minSdkVersion 24
-        targetSdk 35
+        targetSdk 36
 
-        versionCode 23
-        versionName '4.11.0-fiddle.5'
+        versionCode 24
+        versionName '4.11.0-fiddle.6'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
 
         javaCompileOptions {
