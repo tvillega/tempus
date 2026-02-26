@@ -63,9 +63,12 @@
     <string name="artist_page_switch_layout_button">Switch layout</string>
     <string name="artist_page_title_album_more_like_this_button">More like this</string>
     <string name="artist_page_title_album_section">Albums</string>
+    <string name="artist_page_title_ep_section">EPs</string>
+    <string name="artist_page_title_single_section">Singles</string>
+    <string name="artist_page_title_appears_on_section">Appears On</string>
     <string name="artist_page_title_biography_more_button">More</string>
     <string name="artist_page_title_biography_section">Biography</string>
-    <string name="artist_page_title_most_streamed_song_section">Most Streamed Songs</string>
+    <string name="artist_page_title_most_streamed_song_section">Top Songs</string>
     <string name="artist_page_title_most_streamed_song_see_all_button">See all</string>
     <string name="battery_optimization_negative_button">Ignore</string>
     <string name="battery_optimization_neutral_button">Don\'t ask again</string>
