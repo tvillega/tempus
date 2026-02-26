@@ -97,6 +97,7 @@ object Preferences {
 	private const val AA_SECOND_TAB = "androidauto_second_tab"
 	private const val AA_THIRD_TAB = "androidauto_third_tab"
 	private const val AA_FOURTH_TAB = "androidauto_fourth_tab"
+    private const val TILE_SIZE = "tile_size"
     
 	@JvmStatic
     fun getServer(): String? {
@@ -779,4 +780,8 @@ object Preferences {
         return App.getInstance().preferences.getString(AA_FOURTH_TAB, "3")!!.toInt()
     }
 	
+    fun getTileSize(): Int {
+        val parsed = App.getInstance().preferences.getString(TILE_SIZE, "2")?.toIntOrNull()
+        return parsed?.takeIf { it in 2..6 } ?: 2
+    }
 }

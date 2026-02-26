@@ -319,5 +319,19 @@
         <item>15</item>
     </string-array>
 	<!-- end Add by MFO -->
+    <string-array name="tile_size_titles">
+        <item>Tiny</item>
+        <item>Small</item>
+        <item>Medium</item>
+        <item>Large</item>
+        <item>Default</item>
+    </string-array>
+    <string-array name="tile_size_divisor">
+        <item>6</item>
+        <item>5</item>
+        <item>4</item>
+        <item>3</item>
+        <item>2</item>
+    </string-array>
 	
 </resources>
