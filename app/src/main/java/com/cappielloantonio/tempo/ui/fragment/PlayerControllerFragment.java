@@ -341,19 +341,22 @@ public class PlayerControllerFragment extends Fragment {
             dialog.show(activity.getSupportFragmentManager(), null);
             });
 
-        playerMediaExtension.setOnClickListener( v -> {
-            ViewGroup parent = (ViewGroup) playerMediaBitrate.getParent();
+        playerMediaExtension.setOnClickListener( v -> toggleBitrateVisibility() );
+        playerMediaBitrate.setOnClickListener(v -> toggleBitrateVisibility() );
+    }
 
-            TransitionSet transition = new TransitionSet()
-                    .addTransition(new Slide(Gravity.START))
-                    .addTransition(new ChangeBounds())
-                    .setDuration(500)
-                    .setInterpolator(new AccelerateDecelerateInterpolator());
-            TransitionManager.beginDelayedTransition(parent, transition);
+    private void toggleBitrateVisibility() {
+        ViewGroup parent = (ViewGroup) playerMediaBitrate.getParent();
 
-            playerMediaBitrate.setVisibility(Preferences.getBitrateVisible() ? View.GONE : View.VISIBLE);
-            Preferences.setBitrateVisible(!Preferences.getBitrateVisible());
-        } );
+        TransitionSet transition = new TransitionSet()
+                .addTransition(new Slide(Gravity.START))
+                .addTransition(new ChangeBounds())
+                .setDuration(500)
+                .setInterpolator(new AccelerateDecelerateInterpolator());
+        TransitionManager.beginDelayedTransition(parent, transition);
+
+        playerMediaBitrate.setVisibility(Preferences.getBitrateVisible() ? View.GONE : View.VISIBLE);
+        Preferences.setBitrateVisible(!Preferences.getBitrateVisible());
     }
 
     private void updateAssetLinkChips(MediaMetadata mediaMetadata) {
