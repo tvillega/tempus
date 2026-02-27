@@ -81,7 +81,6 @@ public class PlayerControllerFragment extends Fragment {
     private ToggleButton skipSilenceToggleButton;
     private Chip playerMediaExtension;
     private TextView playerMediaBitrate;
-    private boolean isBitrateVisible = true;
     private ConstraintLayout playerQuickActionView;
     private ImageButton playerOpenQueueButton;
     private ImageButton playerTrackInfo;
@@ -320,7 +319,7 @@ public class PlayerControllerFragment extends Fragment {
                 if (!samplingRate.trim().isEmpty()) items.add(samplingRate);
                 String mediaQuality = TextUtils.join(" • ", items);
                 
-                playerMediaBitrate.setVisibility(View.VISIBLE);
+                playerMediaBitrate.setVisibility(Preferences.getBitrateVisible() ? View.VISIBLE : View.GONE);
                 playerMediaBitrate.setText(isLocal ? mediaQuality : mediaQuality);
             }
         }
@@ -352,8 +351,8 @@ public class PlayerControllerFragment extends Fragment {
                     .setInterpolator(new AccelerateDecelerateInterpolator());
             TransitionManager.beginDelayedTransition(parent, transition);
 
-            playerMediaBitrate.setVisibility(isBitrateVisible ? View.GONE : View.VISIBLE);
-            isBitrateVisible = !isBitrateVisible;
+            playerMediaBitrate.setVisibility(Preferences.getBitrateVisible() ? View.GONE : View.VISIBLE);
+            Preferences.setBitrateVisible(!Preferences.getBitrateVisible());
         } );
     }
 
