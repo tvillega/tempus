@@ -17,6 +17,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.media3.common.util.UnstableApi;
@@ -139,6 +140,7 @@ public class HomeTabMusicFragment extends Fragment implements ClickCallback {
         initPinnedPlaylistsView();
         initSharesView();
         initHomeReorganizer();
+        initSwipeToRefresh();
 
         reorder();
     }
@@ -1427,5 +1429,36 @@ public class HomeTabMusicFragment extends Fragment implements ClickCallback {
 
     private void setStarredSongsMediaBrowserListenableFuture() {
         starredSongAdapter.setMediaBrowserListenableFuture(mediaBrowserListenableFuture);
+    }
+
+    public void initSwipeToRefresh() {
+        bind.swipeHomeTabMusicToRefresh.setOnRefreshListener(() -> {
+            pullToRefresh();
+            bind.swipeHomeTabMusicToRefresh.setRefreshing(false);
+        });
+    }
+
+    private void pullToRefresh() {
+        LifecycleOwner lifecycleOwner = getViewLifecycleOwner();
+
+        homeViewModel.refreshStarredArtists(lifecycleOwner);
+        homeViewModel.refreshStarredAlbums(lifecycleOwner);
+        homeViewModel.refreshStarredTracks(lifecycleOwner);
+
+        homeViewModel.refreshDiscoverySongSample(lifecycleOwner);
+        homeViewModel.refreshSimilarSongSample(lifecycleOwner);
+
+        homeViewModel.refreshBestOfArtist(lifecycleOwner);
+        homeViewModel.refreshShares(lifecycleOwner);
+
+
+        homeViewModel.refreshMostPlayedAlbums(lifecycleOwner);
+        homeViewModel.refreshMostRecentlyAddedAlbums(lifecycleOwner);
+        homeViewModel.refreshRecentlyPlayedAlbumList(lifecycleOwner);
+
+        homeViewModel.refreshRadioArtistSample(lifecycleOwner);
+
+        refreshSharesView();
+        refreshPlaylistView();
     }
 }
