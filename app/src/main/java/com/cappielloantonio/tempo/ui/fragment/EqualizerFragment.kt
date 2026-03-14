@@ -85,6 +85,7 @@ class EqualizerFragment : Fragment() {
         activity.setBottomNavigationBarVisibility(showBottomBar)
     }
 
+    @OptIn(UnstableApi::class)
     override fun onStop() {
         super.onStop()
         requireActivity().unbindService(connection)
@@ -97,6 +98,8 @@ class EqualizerFragment : Fragment() {
             }
             receiverRegistered = false
         }
+
+        activity.setBottomSheetVisibility(true);
     }
 
     override fun onCreateView(
