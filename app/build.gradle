@@ -55,6 +55,25 @@ android {
             applicationId "com.eddyizm.degoogled.tempus"
         }
 
+        fiddle {
+            dimension = "default"
+            applicationId "com.tvillega.fiddle"
+            resValue "string", "app_name", "Fiddle"
+            versionNameSuffix "fiddle"
+        }
+
+    }
+
+    sourceSets {
+        fiddle {
+            java.srcDirs      = ['src/degoogled/java']
+            kotlin.srcDirs    = ['src/degoogled/kotlin']
+            res.srcDirs       = ['src/degoogled/res']
+            assets.srcDirs    = ['src/degoogled/assets']
+            aidl.srcDirs      = ['src/degoogled/aidl']
+            renderscript.srcDirs = ['src/degoogled/rs']
+            jniLibs.srcDirs   = ['src/degoogled/jniLibs']
+        }
     }
 
     buildTypes {
